@@ -1,0 +1,10 @@
+{
+  "name": "Nutrabiotics",
+  "short_name": "Nutrabiotics",
+  "description": "Sistema de Gestión de Proyectos Nutrabiotics",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "icons": []
+}

@@ -41,9 +41,14 @@ RUN adduser --system --uid 1001 nextjs
 WORKDIR /app
 
 # Copiar archivos necesarios desde builder
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
+# Copiar public solo si existe
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+
+# Copiar aplicación standalone
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+
+# Copiar archivos estáticos
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 # Cambiar propietario
 RUN chown -R nextjs:nodejs /app
