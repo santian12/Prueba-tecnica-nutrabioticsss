@@ -1,0 +1,66 @@
+# ===================================================================
+# DOCKER IGNORE - Optimizar contexto de construcción
+# ===================================================================
+
+# Documentación
+*.md
+*.pdf
+*.txt
+!requirements.txt
+
+# Git y control de versiones
+.git
+.gitignore
+.gitmodules
+
+# Entornos virtuales
+venv/
+env/
+.env
+
+# Dependencias de desarrollo
+node_modules/
+backend/__pycache__/
+frontend/.next/
+frontend/out/
+
+# Archivos de configuración local
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs y temporales
+*.log
+logs/
+tmp/
+temp/
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Base de datos local
+*.db
+*.sqlite3
+
+# Archivos de respaldo
+*.bak
+*.backup
+
+# Archivos de prueba
+*test*
+*Test*
+*TEST*
+
+# Docker
+Dockerfile.old
+docker-compose.*.yml
+!docker-compose.yml
+
+# Cache
+.cache/
+.npm/
+.yarn/
+pip-cache/

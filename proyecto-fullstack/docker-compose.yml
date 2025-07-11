@@ -1,0 +1,99 @@
+# ===================================================================
+# DOCKER COMPOSE - ARQUITECTURA MULTI-CONTENEDOR
+# Frontend + Backend + PostgreSQL
+# ===================================================================
+
+services:
+  # ===================================================================
+  # BASE DE DATOS POSTGRESQL
+  # ===================================================================
+  database:
+    image: postgres:15-alpine
+    container_name: nutrabiotics-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: nutrabiotics_db
+      POSTGRES_USER: nutrabiotics_user
+      POSTGRES_PASSWORD: password123
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    networks:
+      - nutrabiotics-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nutrabiotics_user -d nutrabiotics_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===================================================================
+  # BACKEND FLASK API
+  # ===================================================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: nutrabiotics-backend
+    restart: unless-stopped
+    environment:
+      - FLASK_ENV=production
+      - DATABASE_URL=postgresql://nutrabiotics_user:password123@database:5432/nutrabiotics_db
+      - JWT_SECRET_KEY=nutrabiotics-jwt-secret-2024
+      - CORS_ORIGINS=http://localhost:3000,http://frontend:3000
+    ports:
+      - "5000:5000"
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - nutrabiotics-network
+    volumes:
+      - ./backend/uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ===================================================================
+  # FRONTEND NEXT.JS
+  # ===================================================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: nutrabiotics-frontend
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://localhost:5000
+      - NEXT_PUBLIC_APP_NAME=Nutrabiotics
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - nutrabiotics-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+# ===================================================================
+# REDES Y VOLÚMENES
+# ===================================================================
+networks:
+  nutrabiotics-network:
+    driver: bridge
+    name: nutrabiotics-net
+
+volumes:
+  postgres_data:
+    driver: local
+    name: nutrabiotics-postgres-data

@@ -1,0 +1,9 @@
+# Dockerfiles
+**/Dockerfile*
+**/.dockerignore
+
+# Datos de Docker
+postgres_data/
+
+# Logs de Docker
+**/*.log

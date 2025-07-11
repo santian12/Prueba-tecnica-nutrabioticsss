@@ -1,0 +1,129 @@
+"""
+Servicios de tareas
+"""
+from datetime import datetime
+from database import db
+from models.task import Task
+from models.project import Project
+from models.user import User
+
+class TaskService:
+    @staticmethod
+    def get_tasks_by_project(project_id):
+        """Obtener tareas por proyecto"""
+        try:
+            tasks = Task.query.filter_by(project_id=project_id).all()
+            return [task.to_dict() for task in tasks], None
+        except Exception as e:
+            return None, f"Error al obtener tareas: {str(e)}"
+
+    @staticmethod
+    def get_task_by_id(task_id):
+        """Obtener tarea por ID"""
+        task = Task.query.get(task_id)
+        if not task:
+            return None, "Tarea no encontrada"
+        
+        return task.to_dict(include_comments=True), None
+
+    @staticmethod
+    def create_task(title, description, project_id, assigned_to=None, priority='medium', due_date=None):
+        """Crear nueva tarea"""
+        # Verificar que el proyecto existe
+        project = Project.query.get(project_id)
+        if not project:
+            return None, "Proyecto no encontrado"
+        
+        # Verificar que el usuario asignado existe (si se proporciona)
+        if assigned_to:
+            user = User.query.get(assigned_to)
+            if not user:
+                return None, "Usuario asignado no encontrado"
+        
+        try:
+            task = Task(
+                title=title,
+                description=description,
+                project_id=project_id,
+                assigned_to=assigned_to,
+                priority=priority,
+                due_date=datetime.strptime(due_date, '%Y-%m-%d').date() if due_date else None
+            )
+            
+            db.session.add(task)
+            db.session.commit()
+            
+            return task.to_dict(), None
+        except Exception as e:
+            db.session.rollback()
+            return None, f"Error al crear tarea: {str(e)}"
+
+    @staticmethod
+    def update_task(task_id, **kwargs):
+        """Actualizar tarea"""
+        task = Task.query.get(task_id)
+        if not task:
+            return None, "Tarea no encontrada"
+        
+        try:
+            # Manejar fecha especial
+            if 'due_date' in kwargs and kwargs['due_date']:
+                kwargs['due_date'] = datetime.strptime(kwargs['due_date'], '%Y-%m-%d').date()
+            
+            for key, value in kwargs.items():
+                if hasattr(task, key):
+                    setattr(task, key, value)
+            
+            db.session.commit()
+            return task.to_dict(), None
+        except Exception as e:
+            db.session.rollback()
+            return None, f"Error al actualizar tarea: {str(e)}"
+
+    @staticmethod
+    def update_task_status(task_id, new_status):
+        """Actualizar solo el estado de la tarea"""
+        task = Task.query.get(task_id)
+        if not task:
+            return None, "Tarea no encontrada"
+        
+        try:
+            task.status = new_status
+            db.session.commit()
+            return task.to_dict(), None
+        except Exception as e:
+            db.session.rollback()
+            return None, f"Error al actualizar estado: {str(e)}"
+
+    @staticmethod
+    def delete_task(task_id):
+        """Eliminar tarea"""
+        task = Task.query.get(task_id)
+        if not task:
+            return False, "Tarea no encontrada"
+        
+        try:
+            db.session.delete(task)
+            db.session.commit()
+            return True, "Tarea eliminada exitosamente"
+        except Exception as e:
+            db.session.rollback()
+            return False, f"Error al eliminar tarea: {str(e)}"
+
+    @staticmethod
+    def get_user_tasks(user_id):
+        """Obtener tareas asignadas a un usuario"""
+        try:
+            tasks = Task.query.filter_by(assigned_to=user_id).all()
+            return [task.to_dict() for task in tasks], None
+        except Exception as e:
+            return None, f"Error al obtener tareas del usuario: {str(e)}"
+
+    @staticmethod
+    def get_tasks_by_status(status):
+        """Obtener tareas por estado"""
+        try:
+            tasks = Task.query.filter_by(status=status).all()
+            return [task.to_dict() for task in tasks], None
+        except Exception as e:
+            return None, f"Error al obtener tareas por estado: {str(e)}"
