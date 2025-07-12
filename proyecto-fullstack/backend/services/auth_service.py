@@ -155,6 +155,26 @@ class AuthService:
             return False, f"Error al actualizar contraseña: {str(e)}"
 
     @staticmethod
+    def get_all_users():
+        """Obtener todos los usuarios"""
+        try:
+            users = User.query.filter_by(is_active=True).all()
+            return [user.to_dict() for user in users], None
+        except Exception as e:
+            return None, f"Error al obtener usuarios: {str(e)}"
+
+    @staticmethod
+    def get_user_by_id(user_id):
+        """Obtener usuario por ID"""
+        try:
+            user = User.query.get(user_id)
+            if not user or not user.is_active:
+                return None, "Usuario no encontrado"
+            return user.to_dict(), None
+        except Exception as e:
+            return None, f"Error al obtener usuario: {str(e)}"
+
+    @staticmethod
     def update_profile(user_id, name=None, email=None, password=None):
         """Actualizar perfil del usuario"""
         try:

@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Task } from '@/lib/types'
-import { cn, getTaskPriorityColor, formatDate } from '@/lib/utils'
+import { cn, getTaskPriorityColor, safeFormatDate } from '@/lib/utils'
 import { Edit, User, Clock, Calendar, MessageCircle } from 'lucide-react'
 
 interface TaskCardProps {
@@ -74,7 +74,7 @@ export function TaskCard({ task, onEdit, onShowComments, isDragging = false }: T
           {task.dueDate && (
             <div className="flex items-center text-xs text-gray-500">
               <Calendar size={12} className="mr-1" />
-              {formatDate(task.dueDate)}
+              {safeFormatDate(task.dueDate)}
             </div>
           )}
         </div>
@@ -115,7 +115,7 @@ export function TaskCard({ task, onEdit, onShowComments, isDragging = false }: T
             
             <div className="flex items-center text-xs text-gray-500">
               <Clock size={12} className="mr-1" />
-              {formatDate(task.createdAt)}
+              {safeFormatDate(task.createdAt)}
             </div>
           </div>
         </div>

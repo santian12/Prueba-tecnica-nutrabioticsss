@@ -39,7 +39,8 @@ def get_tasks():
         
         return jsonify({
             'success': True,
-            'tasks': tasks
+            'data': tasks,
+            'total': len(tasks)
         }), 200
         
     except Exception as e:

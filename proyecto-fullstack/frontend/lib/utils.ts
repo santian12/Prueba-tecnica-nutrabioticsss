@@ -15,7 +15,10 @@ export function formatDate(date: string | Date): string {
 
 // Función segura para formatear fechas que pueden ser nulas o inválidas
 export function safeFormatDate(date: string | Date | null | undefined): string {
-  if (!date) return 'Sin fecha'
+  // Verificar si la fecha es null, undefined, string vacío o solo espacios
+  if (!date || (typeof date === 'string' && date.trim() === '')) {
+    return 'Sin fecha'
+  }
   
   try {
     const dateObj = new Date(date)
@@ -36,7 +39,10 @@ export function safeFormatDate(date: string | Date | null | undefined): string {
 
 // Función segura para formatear fecha y hora
 export function safeFormatDateTime(date: string | Date | null | undefined): string {
-  if (!date) return 'Sin fecha'
+  // Verificar si la fecha es null, undefined, string vacío o solo espacios
+  if (!date || (typeof date === 'string' && date.trim() === '')) {
+    return 'Sin fecha'
+  }
   
   try {
     const dateObj = new Date(date)
@@ -92,7 +98,10 @@ export function debounce<T extends (...args: any[]) => void>(
 
 // Función segura para parsear fechas que pueden ser nulas o inválidas
 export function safeParseDate(date: string | Date | null | undefined): Date | null {
-  if (!date) return null
+  // Verificar si la fecha es null, undefined, string vacío o solo espacios
+  if (!date || (typeof date === 'string' && date.trim() === '')) {
+    return null
+  }
   
   try {
     const dateObj = new Date(date)

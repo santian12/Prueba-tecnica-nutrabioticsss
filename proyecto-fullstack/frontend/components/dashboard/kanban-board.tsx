@@ -63,20 +63,29 @@ export function KanbanBoard({ tasks, onEditTask, isLoading }: KanbanBoardProps) 
     const taskId = active.id as string
     const newStatus = over.id as string
 
+    console.log('🔄 Drag end - taskId:', taskId, 'newStatus:', newStatus)
+
     // Find the task being moved
     const task = tasks.find(t => t.id === taskId)
-    if (!task) return
+    if (!task) {
+      console.error('❌ Task not found:', taskId)
+      return
+    }
+
+    console.log('📋 Task found:', task)
+    console.log('🔄 Current status:', task.status, '-> New status:', newStatus)
 
     // If the status hasn't changed, don't update
     if (task.status === newStatus) return
 
     try {
       // Update the task status
+      console.log('🚀 Calling updateTaskStatus with:', taskId, newStatus)
       await updateTaskStatus(taskId, newStatus)
       toast.success(`Task moved to "${columns.find(c => c.id === newStatus)?.title}"`)
     } catch (error) {
       toast.error('Error updating task status')
-      console.error('Error updating task status:', error)
+      console.error('❌ Error updating task status:', error)
     }
   }
 

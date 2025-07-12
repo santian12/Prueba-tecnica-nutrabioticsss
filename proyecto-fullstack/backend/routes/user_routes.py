@@ -20,7 +20,8 @@ def get_all_users():
         
         return jsonify({
             'success': True,
-            'users': users
+            'data': users,
+            'total': len(users)
         }), 200
         
     except Exception as e:

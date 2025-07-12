@@ -38,7 +38,7 @@ def get_general_metrics():
         
         return jsonify({
             'success': True,
-            'metrics': general_metrics
+            'data': general_metrics
         }), 200
         
     except Exception as e:

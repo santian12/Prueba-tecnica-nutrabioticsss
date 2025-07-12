@@ -9,6 +9,67 @@ from models.user import User
 
 class TaskService:
     @staticmethod
+    def get_all_tasks(filters=None):
+        """Obtener todas las tareas con filtros opcionales"""
+        try:
+            query = Task.query
+            
+            if filters:
+                if 'project_id' in filters:
+                    query = query.filter_by(project_id=filters['project_id'])
+                if 'assigned_to' in filters:
+                    query = query.filter_by(assigned_to=filters['assigned_to'])
+                if 'status' in filters:
+                    query = query.filter_by(status=filters['status'])
+                if 'priority' in filters:
+                    query = query.filter_by(priority=filters['priority'])
+                if 'search' in filters:
+                    search_term = f"%{filters['search']}%"
+                    query = query.filter(Task.title.ilike(search_term) | Task.description.ilike(search_term))
+            
+            tasks = query.all()
+            return [task.to_dict() for task in tasks], None
+        except Exception as e:
+            return None, f"Error al obtener tareas: {str(e)}"
+
+    @staticmethod
+    def get_all_tasks_stats():
+        """Obtener estadísticas de todas las tareas"""
+        try:
+            tasks = Task.query.all()
+            
+            total_tasks = len(tasks)
+            
+            # Estadísticas por estado
+            tasks_by_status = {
+                'todo': len([t for t in tasks if t.status == 'todo']),
+                'in_progress': len([t for t in tasks if t.status == 'in_progress']),
+                'review': len([t for t in tasks if t.status == 'review']),
+                'done': len([t for t in tasks if t.status == 'done'])
+            }
+            
+            # Estadísticas por prioridad
+            tasks_by_priority = {
+                'high': len([t for t in tasks if t.priority == 'high']),
+                'medium': len([t for t in tasks if t.priority == 'medium']),
+                'low': len([t for t in tasks if t.priority == 'low'])
+            }
+            
+            # Estadísticas adicionales para compatibility
+            stats = {
+                'total_tasks': total_tasks,
+                'completed_tasks': tasks_by_status['done'],
+                'in_progress_tasks': tasks_by_status['in_progress'],
+                'pending_tasks': tasks_by_status['todo'],
+                'tasks_by_status': tasks_by_status,
+                'tasks_by_priority': tasks_by_priority
+            }
+            
+            return stats, None
+        except Exception as e:
+            return None, f"Error al obtener estadísticas: {str(e)}"
+
+    @staticmethod
     def get_tasks_by_project(project_id):
         """Obtener tareas por proyecto"""
         try:
