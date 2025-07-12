@@ -23,6 +23,7 @@ class User(db.Model):
     assigned_tasks = db.relationship('Task', backref='assignee', lazy=True, foreign_keys='Task.assigned_to')
     created_projects = db.relationship('Project', backref='creator', lazy=True)
     comments = db.relationship('Comment', backref='author', lazy=True)
+    notifications = db.relationship('Notification', back_populates='user', lazy=True)
 
     def set_password(self, password):
         """Establecer password hasheado"""

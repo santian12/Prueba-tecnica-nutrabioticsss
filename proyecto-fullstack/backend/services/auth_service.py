@@ -17,8 +17,13 @@ class AuthService:
         """Autenticar usuario"""
         user = User.query.filter_by(email=email, is_active=True).first()
         
-        if not user or not user.check_password(password):
-            return None, "Credenciales inválidas"
+        # Usuario no encontrado
+        if not user:
+            return None, "Usuario no encontrado"
+        
+        # Contraseña incorrecta
+        if not user.check_password(password):
+            return None, "Contraseña incorrecta"
         
         access_token = create_access_token(identity=user.id)
         refresh_token = create_refresh_token(identity=user.id)
@@ -47,7 +52,17 @@ class AuthService:
         try:
             db.session.add(user)
             db.session.commit()
-            return user.to_dict(), None
+            
+            # Generar tokens al registrar (auto-login)
+            access_token = create_access_token(identity=user.id)
+            refresh_token = create_refresh_token(identity=user.id)
+            
+            return {
+                'user': user.to_dict(),
+                'access_token': access_token,
+                'refresh_token': refresh_token
+            }, None
+            
         except Exception as e:
             db.session.rollback()
             return None, f"Error al crear usuario: {str(e)}"
@@ -138,3 +153,35 @@ class AuthService:
         except Exception as e:
             db.session.rollback()
             return False, f"Error al actualizar contraseña: {str(e)}"
+
+    @staticmethod
+    def update_profile(user_id, name=None, email=None, password=None):
+        """Actualizar perfil del usuario"""
+        try:
+            user = User.query.get(user_id)
+            
+            if not user:
+                return None, "Usuario no encontrado"
+            
+            # Verificar si el email ya existe (si se está actualizando)
+            if email and email != user.email:
+                existing_user = User.query.filter_by(email=email).first()
+                if existing_user:
+                    return None, "El email ya está en uso por otro usuario"
+            
+            # Actualizar campos si se proporcionan
+            if name:
+                user.name = name
+            
+            if email:
+                user.email = email
+            
+            if password:
+                user.set_password(password)
+            
+            db.session.commit()
+            return user.to_dict(), None
+            
+        except Exception as e:
+            db.session.rollback()
+            return None, f"Error al actualizar perfil: {str(e)}"

@@ -14,7 +14,7 @@ import { ProjectModal } from '@/components/dashboard/project-modal'
 import { TaskModal } from '@/components/dashboard/task-modal'
 import { Navbar } from '@/components/dashboard/navbar'
 import { Plus, Search, Filter } from 'lucide-react'
-import { cn, getProjectStatusColor } from '@/lib/utils'
+import { cn, getProjectStatusColor, safeFormatDate } from '@/lib/utils'
 import toast from 'react-hot-toast'
 
 export default function DashboardPage() {
@@ -29,13 +29,16 @@ export default function DashboardPage() {
     fetchProjects,
     fetchAllTaskCounts,
     fetchTasks,
-    setSelectedProject
+    setSelectedProject,
+    updateProject,
+    deleteProject
   } = useProjectStore()
 
   const [searchTerm, setSearchTerm] = useState('')
   const [showProjectModal, setShowProjectModal] = useState(false)
   const [showTaskModal, setShowTaskModal] = useState(false)
   const [selectedTask, setSelectedTask] = useState<any>(null)
+  const [editingProject, setEditingProject] = useState<any>(null)
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -52,14 +55,14 @@ export default function DashboardPage() {
         fetchAllTaskCounts()
       })
     }
-  }, [isAuthenticated, fetchProjects, fetchAllTaskCounts])
+  }, [isAuthenticated]) // Removemos las funciones de las dependencias
 
   // Fetch tasks when project changes
   useEffect(() => {
     if (selectedProject) {
       fetchTasks(selectedProject.id)
     }
-  }, [selectedProject, fetchTasks])
+  }, [selectedProject]) // Removemos fetchTasks de las dependencias
 
   const filteredTasks = tasks.filter(task => 
     task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -67,6 +70,7 @@ export default function DashboardPage() {
   )
 
   const handleCreateProject = () => {
+    setEditingProject(null)
     setShowProjectModal(true)
   }
 
@@ -84,9 +88,48 @@ export default function DashboardPage() {
     setShowTaskModal(true)
   }
 
+  const handleEditProject = (project: any) => {
+    console.log('🔧 Dashboard: Abriendo modal de edición para:', project)
+    setEditingProject(project)
+    setShowProjectModal(true)
+  }
+
+  const handleArchiveProject = async (projectId: string) => {
+    console.log('📦 Dashboard: Archivando proyecto:', projectId)
+    try {
+      const project = projects.find(p => p.id === projectId)
+      if (project) {
+        await updateProject(projectId, { status: 'cancelled' })
+        toast.success('Proyecto archivado exitosamente')
+        // Actualizar conteos después de archivar
+        await fetchAllTaskCounts()
+      }
+    } catch (error) {
+      console.error('Error al archivar proyecto:', error)
+      toast.error('Error al archivar proyecto')
+    }
+  }
+
+  const handleDeleteProject = async (projectId: string) => {
+    console.log('🗑️ Dashboard: Eliminando proyecto:', projectId)
+    try {
+      await deleteProject(projectId)
+      toast.success('Proyecto eliminado exitosamente')
+      // Si el proyecto eliminado era el seleccionado, limpiar selección
+      if (selectedProject?.id === projectId) {
+        setSelectedProject(null)
+      }
+      // Actualizar conteos después de eliminar
+      await fetchAllTaskCounts()
+    } catch (error) {
+      console.error('Error al eliminar proyecto:', error)
+      toast.error('Error al eliminar proyecto')
+    }
+  }
+
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <LoadingSpinner size="lg" />
       </div>
     )
@@ -105,6 +148,9 @@ export default function DashboardPage() {
         taskCounts={taskCounts}
         onSelectProject={setSelectedProject}
         onCreateProject={handleCreateProject}
+        onEditProject={handleEditProject}
+        onArchiveProject={handleArchiveProject}
+        onDeleteProject={handleDeleteProject}
         isLoading={projectLoading}
       />
       
@@ -114,10 +160,10 @@ export default function DashboardPage() {
           <div className="mb-6">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">
+                <h1 className="text-2xl font-bold text-foreground">
                   {selectedProject ? selectedProject.name : 'Dashboard'}
                 </h1>
-                <p className="text-gray-600">
+                <p className="text-muted-foreground">
                   {selectedProject 
                     ? `${tasks.length} tareas en este proyecto` 
                     : 'Selecciona un proyecto para comenzar'
@@ -149,7 +195,7 @@ export default function DashboardPage() {
             {selectedProject && (
               <div className="flex items-center space-x-4">
                 <div className="relative flex-1 max-w-md">
-                  <Search size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <Search size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     placeholder="Buscar tareas..."
                     value={searchTerm}
@@ -169,10 +215,10 @@ export default function DashboardPage() {
           {!selectedProject ? (
             <div className="text-center py-12">
               <div className="max-w-md mx-auto">
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <h3 className="text-lg font-medium text-foreground mb-2">
                   Bienvenido, {user?.name}
                 </h3>
-                <p className="text-gray-600 mb-6">
+                <p className="text-muted-foreground mb-6">
                   Selecciona un proyecto desde la barra lateral o crea uno nuevo para comenzar.
                 </p>
                 <Button onClick={handleCreateProject}>
@@ -190,7 +236,7 @@ export default function DashboardPage() {
                   <CardDescription>{selectedProject.description}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex items-center space-x-6 text-sm text-gray-600">
+                  <div className="flex items-center space-x-6 text-sm text-muted-foreground">
                     <div>
                       <span className="font-medium">Estado:</span>
                       <span className={cn(
@@ -203,7 +249,7 @@ export default function DashboardPage() {
                     <div>
                       <span className="font-medium">Creado:</span>
                       <span className="ml-2">
-                        {new Date(selectedProject.createdAt).toLocaleDateString()}
+                        {safeFormatDate(selectedProject.createdAt)}
                       </span>
                     </div>
                   </div>
@@ -223,8 +269,11 @@ export default function DashboardPage() {
         {/* Modals */}
         <ProjectModal 
           isOpen={showProjectModal}
-          onClose={() => setShowProjectModal(false)}
-          project={null}
+          onClose={() => {
+            setShowProjectModal(false)
+            setEditingProject(null)
+          }}
+          project={editingProject}
         />
         
         <TaskModal 

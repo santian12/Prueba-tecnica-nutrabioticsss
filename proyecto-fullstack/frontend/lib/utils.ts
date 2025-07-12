@@ -13,6 +13,50 @@ export function formatDate(date: string | Date): string {
   }).format(new Date(date))
 }
 
+// Función segura para formatear fechas que pueden ser nulas o inválidas
+export function safeFormatDate(date: string | Date | null | undefined): string {
+  if (!date) return 'Sin fecha'
+  
+  try {
+    const dateObj = new Date(date)
+    // Verificar si la fecha es válida
+    if (isNaN(dateObj.getTime())) {
+      return 'Fecha inválida'
+    }
+    
+    return new Intl.DateTimeFormat('es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }).format(dateObj)
+  } catch (error) {
+    return 'Fecha inválida'
+  }
+}
+
+// Función segura para formatear fecha y hora
+export function safeFormatDateTime(date: string | Date | null | undefined): string {
+  if (!date) return 'Sin fecha'
+  
+  try {
+    const dateObj = new Date(date)
+    // Verificar si la fecha es válida
+    if (isNaN(dateObj.getTime())) {
+      return 'Fecha inválida'
+    }
+    
+    return new Intl.DateTimeFormat('es-ES', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(dateObj)
+  } catch (error) {
+    return 'Fecha inválida'
+  }
+}
+
 export function formatDateTime(date: string | Date): string {
   return new Intl.DateTimeFormat('es-ES', {
     year: 'numeric',
@@ -104,5 +148,46 @@ export function getProjectStatusColor(status: string): string {
       return 'bg-red-100 text-red-800'
     default:
       return 'bg-gray-100 text-gray-800'
+  }
+}
+
+// Función segura para formatDistanceToNow
+export function safeFormatDistanceToNow(date: string | Date | null | undefined): string {
+  if (!date) return 'Hace un momento'
+  
+  try {
+    const dateObj = new Date(date)
+    // Verificar si la fecha es válida
+    if (isNaN(dateObj.getTime())) {
+      return 'Fecha inválida'
+    }
+    
+    // Importar dinámicamente para evitar problemas de SSR
+    const { formatDistanceToNow } = require('date-fns')
+    const { es } = require('date-fns/locale')
+    
+    return formatDistanceToNow(dateObj, {
+      addSuffix: true,
+      locale: es
+    })
+  } catch (error) {
+    return 'Hace un momento'
+  }
+}
+
+// Función segura para convertir fecha a string para inputs HTML
+export function safeToDateInputString(date: string | Date | null | undefined): string {
+  if (!date) return ''
+  
+  try {
+    const dateObj = new Date(date)
+    // Verificar si la fecha es válida
+    if (isNaN(dateObj.getTime())) {
+      return ''
+    }
+    
+    return dateObj.toISOString().split('T')[0]
+  } catch (error) {
+    return ''
   }
 }

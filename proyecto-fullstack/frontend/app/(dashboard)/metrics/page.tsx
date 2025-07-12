@@ -27,6 +27,7 @@ import {
   Calendar,
   Target
 } from 'lucide-react';
+import { safeFormatDate } from '@/lib/utils';
 import toast from 'react-hot-toast';
 
 // Colores para los gráficos
@@ -352,11 +353,11 @@ export default function MetricsPage() {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="week" 
-                tickFormatter={(value) => new Date(value).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })}
+                tickFormatter={(value) => safeFormatDate(value) || 'Fecha inválida'}
               />
               <YAxis />
               <Tooltip 
-                labelFormatter={(value) => `Semana del ${new Date(value).toLocaleDateString('es-ES')}`}
+                labelFormatter={(value) => `Semana del ${safeFormatDate(value) || 'fecha inválida'}`}
               />
               <Line 
                 type="monotone" 

@@ -3,12 +3,13 @@ Aplicación principal - Orquestador de microservicios
 Sistema de Gestión de Proyectos refactorizado en arquitectura de microservicios
 """
 import os
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request, make_response
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_mail import Mail
 from datetime import timedelta
 from werkzeug.security import generate_password_hash
+from sqlalchemy import text
 
 # Importar configuración y base de datos
 from config import config
@@ -21,6 +22,7 @@ from models.task import Task
 from models.comment import Comment
 from models.password_reset_token import PasswordResetToken
 from models.revoked_token import RevokedToken
+from models.notification import Notification
 
 # Importar blueprints de rutas (microservicios)
 from routes.auth_routes import auth_bp
@@ -29,6 +31,7 @@ from routes.task_routes import tasks_bp
 from routes.user_routes import users_bp
 from routes.metrics_routes import metrics_bp
 from routes.pdf_routes import pdf_bp
+from routes.notification_routes import notifications_bp
 
 # Importar utilidades
 from utils.auth_decorators import check_if_token_revoked
@@ -53,8 +56,26 @@ def create_app(config_name=None):
     db.init_app(app)
     migrate.init_app(app, db)
     
-    # Configurar CORS
-    CORS(app, origins=['http://localhost:3000'], supports_credentials=True)
+    # Configurar CORS de manera más robusta
+    CORS(app, 
+         origins=['http://localhost:3000'], 
+         supports_credentials=True,
+         allow_headers=['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+         methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+         expose_headers=['Content-Range', 'X-Content-Range'],
+         send_wildcard=False
+    )
+    
+    # Manejo específico para OPTIONS requests
+    @app.before_request
+    def handle_preflight():
+        if request.method == "OPTIONS":
+            response = make_response()
+            response.headers.add("Access-Control-Allow-Origin", "http://localhost:3000")
+            response.headers.add('Access-Control-Allow-Headers', "Content-Type,Authorization,X-Requested-With,Accept")
+            response.headers.add('Access-Control-Allow-Methods', "GET,POST,PUT,DELETE,OPTIONS,PATCH")
+            response.headers.add('Access-Control-Allow-Credentials', 'true')
+            return response
     
     # Configurar JWT
     jwt = JWTManager(app)
@@ -99,12 +120,13 @@ def create_app(config_name=None):
         app.mail = mail
     
     # Registrar blueprints (microservicios)
-    app.register_blueprint(auth_bp)           # Autenticación (/auth)
-    app.register_blueprint(projects_bp)       # Gestión de proyectos (/projects)
-    app.register_blueprint(tasks_bp)          # Gestión de tareas (/tasks)
-    app.register_blueprint(users_bp)          # Gestión de usuarios (/users)
-    app.register_blueprint(metrics_bp)        # Métricas y estadísticas (/metrics)
-    app.register_blueprint(pdf_bp)            # Exportación PDF (/pdf)
+    app.register_blueprint(auth_bp, url_prefix='/api')           # Autenticación (/api/auth)
+    app.register_blueprint(projects_bp, url_prefix='/api')       # Gestión de proyectos (/api/projects)
+    app.register_blueprint(tasks_bp, url_prefix='/api')          # Gestión de tareas (/api/tasks)
+    app.register_blueprint(users_bp, url_prefix='/api')          # Gestión de usuarios (/api/users)
+    app.register_blueprint(metrics_bp, url_prefix='/api')        # Métricas y estadísticas (/api/metrics)
+    app.register_blueprint(pdf_bp, url_prefix='/api')            # Exportación PDF (/api/pdf)
+    app.register_blueprint(notifications_bp, url_prefix='/api')  # Gestión de notificaciones (/api/notifications)
     
     # Ruta de salud del sistema
     @app.route('/health', methods=['GET'])
@@ -121,9 +143,63 @@ def create_app(config_name=None):
                 'tasks': 'activo',
                 'users': 'activo',
                 'metrics': 'activo',
-                'pdf': 'activo'
+                'pdf': 'activo',
+                'notifications': 'activo'
             }
         }), 200
+    
+    # Endpoint de diagnóstico de base de datos
+    @app.route('/debug/db-info', methods=['GET'])
+    def debug_db_info():
+        """Endpoint de diagnóstico para verificar qué base de datos está usando"""
+        try:
+            # Obtener información de la configuración
+            db_uri = app.config.get('SQLALCHEMY_DATABASE_URI', 'No configurado')
+            flask_env = os.getenv('FLASK_ENV', 'No configurado')
+            
+            # Verificar conexión y obtener información de la base de datos
+            with db.engine.connect() as connection:
+                # Para PostgreSQL
+                if 'postgresql' in db_uri:
+                    result = connection.execute(text("SELECT version();"))
+                    db_version = result.fetchone()[0]
+                    
+                    # Contar registros
+                    users_count = connection.execute(text("SELECT COUNT(*) FROM users;")).fetchone()[0]
+                    projects_count = connection.execute(text("SELECT COUNT(*) FROM projects;")).fetchone()[0]
+                    tasks_count = connection.execute(text("SELECT COUNT(*) FROM tasks;")).fetchone()[0]
+                    
+                # Para SQLite
+                else:
+                    result = connection.execute(text("SELECT sqlite_version();"))
+                    db_version = f"SQLite {result.fetchone()[0]}"
+                    
+                    # Contar registros
+                    users_count = connection.execute(text("SELECT COUNT(*) FROM users;")).fetchone()[0]
+                    projects_count = connection.execute(text("SELECT COUNT(*) FROM projects;")).fetchone()[0]
+                    tasks_count = connection.execute(text("SELECT COUNT(*) FROM tasks;")).fetchone()[0]
+            
+            return jsonify({
+                'success': True,
+                'database_uri': db_uri,
+                'flask_env': flask_env,
+                'database_version': db_version,
+                'connection_status': 'OK',
+                'data_counts': {
+                    'users': users_count,
+                    'projects': projects_count,
+                    'tasks': tasks_count
+                }
+            }), 200
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': str(e),
+                'database_uri': app.config.get('SQLALCHEMY_DATABASE_URI', 'No configurado'),
+                'flask_env': os.getenv('FLASK_ENV', 'No configurado'),
+                'connection_status': 'ERROR'
+            }), 500
     
     # Ruta raíz con información de la API
     @app.route('/', methods=['GET'])
@@ -141,6 +217,7 @@ def create_app(config_name=None):
                 'users': '/users',
                 'metrics': '/metrics',
                 'pdf_reports': '/pdf',
+                'notifications': '/notifications',
                 'health_check': '/health'
             },
             'features': [

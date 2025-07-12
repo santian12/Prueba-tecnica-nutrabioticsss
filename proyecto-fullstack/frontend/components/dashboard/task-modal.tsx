@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useProjectStore } from '@/lib/store/projectStore'
@@ -10,7 +10,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Task } from '@/lib/types'
+import { safeToDateInputString } from '@/lib/utils'
 import { X } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -40,6 +42,7 @@ export function TaskModal({ isOpen, onClose, task, projectId }: TaskModalProps) 
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors }
   } = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
@@ -48,7 +51,7 @@ export function TaskModal({ isOpen, onClose, task, projectId }: TaskModalProps) 
       description: task.description,
       status: task.status,
       priority: task.priority,
-      due_date: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '',
+      due_date: safeToDateInputString(task.dueDate),
       assigned_to: task.assignedTo
     } : {
       title: '',
@@ -67,7 +70,7 @@ export function TaskModal({ isOpen, onClose, task, projectId }: TaskModalProps) 
         description: task.description,
         status: task.status,
         priority: task.priority,
-        due_date: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '',
+        due_date: safeToDateInputString(task.dueDate),
         assigned_to: task.assignedTo
       })
     } else {
@@ -170,46 +173,60 @@ export function TaskModal({ isOpen, onClose, task, projectId }: TaskModalProps) 
                 placeholder="Describe los detalles de la tarea..."
                 rows={3}
                 {...register('description')}
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none ${
-                  errors.description ? 'border-red-500' : 'border-gray-300'
+                className={`flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none ${
+                  errors.description ? 'border-destructive focus-visible:ring-destructive' : ''
                 }`}
               />
               {errors.description && (
-                <p className="text-sm text-red-600">{errors.description.message}</p>
+                <p className="text-sm text-destructive">{errors.description.message}</p>
               )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="status">Estado</Label>
-                <select
-                  id="status"
-                  {...register('status')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="todo">Por Hacer</option>
-                  <option value="in_progress">En Progreso</option>
-                  <option value="review">En Revisión</option>
-                  <option value="done">Completado</option>
-                </select>
+                <Controller
+                  name="status"
+                  control={control}
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Selecciona el estado" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="todo">Por Hacer</SelectItem>
+                        <SelectItem value="in_progress">En Progreso</SelectItem>
+                        <SelectItem value="review">En Revisión</SelectItem>
+                        <SelectItem value="done">Completado</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
                 {errors.status && (
-                  <p className="text-sm text-red-600">{errors.status.message}</p>
+                  <p className="text-sm text-destructive">{errors.status.message}</p>
                 )}
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="priority">Prioridad</Label>
-                <select
-                  id="priority"
-                  {...register('priority')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="low">Baja</option>
-                  <option value="medium">Media</option>
-                  <option value="high">Alta</option>
-                </select>
+                <Controller
+                  name="priority"
+                  control={control}
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Selecciona la prioridad" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="low">Baja</SelectItem>
+                        <SelectItem value="medium">Media</SelectItem>
+                        <SelectItem value="high">Alta</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
                 {errors.priority && (
-                  <p className="text-sm text-red-600">{errors.priority.message}</p>
+                  <p className="text-sm text-destructive">{errors.priority.message}</p>
                 )}
               </div>
             </div>

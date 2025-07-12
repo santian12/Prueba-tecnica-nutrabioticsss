@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react';
 import { getTaskComments, createComment, updateComment, deleteComment } from '@/lib/api-simple';
 import { useAuthStore } from '@/lib/store/authStore';
-import { formatDistanceToNow } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { safeFormatDistanceToNow } from '@/lib/utils';
 import { MessageCircle, Send, Edit2, Trash2, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -177,10 +176,7 @@ export function TaskComments({ taskId, isOpen, onClose }: TaskCommentsProps) {
                       <div>
                         <p className="font-medium text-sm">{comment.authorName}</p>
                         <p className="text-xs text-gray-500">
-                          {formatDistanceToNow(new Date(comment.createdAt), {
-                            addSuffix: true,
-                            locale: es
-                          })}
+                          {safeFormatDistanceToNow(comment.createdAt)}
                           {comment.updatedAt && comment.updatedAt !== comment.createdAt && (
                             <span className="ml-1">(editado)</span>
                           )}

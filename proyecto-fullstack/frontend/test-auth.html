@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Auth</title>
+</head>
+<body>
+    <h1>Test de Autenticación</h1>
+    <div>
+        <h2>Test 1: Usuario inexistente</h2>
+        <button onclick="testUserNotFound()">Test Usuario No Encontrado</button>
+        <div id="result1"></div>
+    </div>
+    
+    <div>
+        <h2>Test 2: Contraseña incorrecta</h2>
+        <button onclick="testWrongPassword()">Test Contraseña Incorrecta</button>
+        <div id="result2"></div>
+    </div>
+
+    <script>
+        async function testUserNotFound() {
+            try {
+                const response = await fetch('http://localhost:5000/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'usuario_inexistente@test.com',
+                        password: 'password123'
+                    })
+                });
+                
+                const data = await response.json();
+                document.getElementById('result1').innerHTML = `
+                    <p>Status: ${response.status}</p>
+                    <p>Response: ${JSON.stringify(data, null, 2)}</p>
+                `;
+            } catch (error) {
+                document.getElementById('result1').innerHTML = `Error: ${error.message}`;
+            }
+        }
+
+        async function testWrongPassword() {
+            try {
+                const response = await fetch('http://localhost:5000/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'juan@nutrabiotics.com', // Usuario que sabemos que existe
+                        password: 'password_incorrecta'
+                    })
+                });
+                
+                const data = await response.json();
+                document.getElementById('result2').innerHTML = `
+                    <p>Status: ${response.status}</p>
+                    <p>Response: ${JSON.stringify(data, null, 2)}</p>
+                `;
+            } catch (error) {
+                document.getElementById('result2').innerHTML = `Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

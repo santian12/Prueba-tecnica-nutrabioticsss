@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { getUsers, createUser, updateUser } from '@/lib/api-simple';
+import { safeFormatDate } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import { Plus, Edit, Trash2, Users, UserCheck, Shield } from 'lucide-react';
 
@@ -286,7 +287,7 @@ export default function UsersPage() {
                     {getRoleBadge(user.role)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(user.createdAt).toLocaleDateString('es-ES')}
+                    {safeFormatDate(user.createdAt) || 'Fecha inválida'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button

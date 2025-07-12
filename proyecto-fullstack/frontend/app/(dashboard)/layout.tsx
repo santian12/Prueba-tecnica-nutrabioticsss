@@ -9,13 +9,15 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <Navbar />
-      <DashboardSidebar>
-        <main className="flex-1 overflow-auto">
-          {children}
-        </main>
-      </DashboardSidebar>
+      <div className="pt-20"> {/* Compensar altura del navbar fijo */}
+        <DashboardSidebar>
+          <main className="flex-1 overflow-auto">
+            {children}
+          </main>
+        </DashboardSidebar>
+      </div>
     </div>
   );
 }

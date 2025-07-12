@@ -31,7 +31,9 @@ def register():
         return jsonify({
             'success': True,
             'message': 'Usuario registrado exitosamente',
-            'user': user_data
+            'user': user_data['user'],
+            'token': user_data['access_token'],
+            'refresh_token': user_data['refresh_token']
         }), 201
         
     except Exception as e:
@@ -159,6 +161,36 @@ def reset_password():
         return jsonify({
             'success': True,
             'message': message
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Error en el servidor: {str(e)}'}), 500
+
+@auth_bp.route('/profile', methods=['PUT'])
+@jwt_required()
+def update_profile():
+    """Actualizar perfil del usuario"""
+    try:
+        current_user_id = get_jwt_identity()
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({'success': False, 'message': 'No se proporcionaron datos para actualizar'}), 400
+        
+        user_data, error = AuthService.update_profile(
+            user_id=current_user_id,
+            name=data.get('name'),
+            email=data.get('email'),
+            password=data.get('password')
+        )
+        
+        if error:
+            return jsonify({'success': False, 'message': error}), 400
+        
+        return jsonify({
+            'success': True,
+            'message': 'Perfil actualizado exitosamente',
+            'user': user_data
         }), 200
         
     except Exception as e:

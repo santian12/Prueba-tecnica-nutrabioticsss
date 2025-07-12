@@ -65,9 +65,13 @@ httpClient.interceptors.response.use(
     // No mostrar toast automáticamente para errores 400, dejar que el componente maneje el error
     if (error.response?.status !== 400) {
       if (error.response?.status === 401) {
-        Cookies.remove('auth-token');
-        if (typeof window !== 'undefined') {
-          window.location.href = '/login';
+        // Solo redirigir si NO es una petición de login
+        const isLoginRequest = error.config?.url?.includes('/auth/login');
+        if (!isLoginRequest) {
+          Cookies.remove('auth-token');
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login';
+          }
         }
       }
       
@@ -115,6 +119,30 @@ export async function registerUser(data: RegisterData): Promise<AuthResponse> {
   }
 }
 
+// ==================== PERFIL ====================
+export async function updateProfile(userData: {
+  name?: string;
+  email?: string;
+  password?: string;
+}): Promise<AuthResponse> {
+  console.log('👤 Actualizando perfil del usuario...');
+  console.log('📝 Datos a actualizar:', userData);
+  
+  try {
+    const response = await httpClient.put('/auth/profile', userData);
+    console.log('✅ Perfil actualizado exitosamente');
+    return response.data;
+  } catch (error) {
+    console.error('❌ Error al actualizar perfil:', error);
+    if (error.response) {
+      console.error('❌ Status:', error.response.status);
+      console.error('❌ Data:', error.response.data);
+      console.error('❌ Headers:', error.response.headers);
+    }
+    throw error;
+  }
+}
+
 // ==================== PROYECTOS ====================
 export async function getProjects(params?: {
   page?: number;
@@ -127,7 +155,7 @@ export async function getProjects(params?: {
     const response = await httpClient.get('/projects', { params });
     console.log('✅ Proyectos obtenidos');
     return {
-      projects: response.data.data || [],
+      projects: response.data.projects || [],
       pagination: response.data.pagination
     };
   } catch (error) {
@@ -201,7 +229,7 @@ export async function getProjectTasks(projectId: string): Promise<any[]> {
   try {
     const response = await httpClient.get(`/projects/${projectId}/tasks`);
     console.log('✅ Tareas del proyecto obtenidas');
-    return response.data.data || [];
+    return response.data.tasks || [];
   } catch (error) {
     console.error('❌ Error al obtener tareas del proyecto:', error);
     throw error;

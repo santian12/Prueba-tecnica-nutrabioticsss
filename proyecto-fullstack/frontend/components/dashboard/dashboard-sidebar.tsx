@@ -65,25 +65,25 @@ export function DashboardSidebar({ children }: DashboardSidebarProps) {
   );
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-background">
       {/* Sidebar */}
       <div className={cn(
-        "bg-white border-r border-gray-200 transition-all duration-300 flex flex-col",
+        "bg-card border-r border-border transition-all duration-300 flex flex-col",
         collapsed ? "w-16" : "w-64"
       )}>
         {/* Header */}
-        <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+        <div className="p-4 border-b border-border flex items-center justify-between">
           {!collapsed && (
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">N</span>
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                <span className="text-primary-foreground font-bold text-sm">N</span>
               </div>
-              <span className="font-semibold text-gray-900">Nutrabiotics</span>
+              <span className="font-semibold text-card-foreground">Nutrabiotics</span>
             </div>
           )}
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="p-1 rounded-md hover:bg-gray-100"
+            className="p-1 rounded-md hover:bg-accent text-muted-foreground hover:text-accent-foreground"
           >
             {collapsed ? <Menu className="w-5 h-5" /> : <X className="w-5 h-5" />}
           </button>
@@ -103,10 +103,10 @@ export function DashboardSidebar({ children }: DashboardSidebarProps) {
                     href={item.href}
                     className={cn(
                       "flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                      "hover:bg-gray-100",
+                      "hover:bg-accent hover:text-accent-foreground",
                       isActive 
-                        ? "bg-blue-50 text-blue-700 border-r-2 border-blue-700" 
-                        : "text-gray-700",
+                        ? "bg-primary/10 text-primary border-r-2 border-primary" 
+                        : "text-muted-foreground",
                       collapsed && "justify-center"
                     )}
                     title={collapsed ? item.label : undefined}
@@ -122,18 +122,18 @@ export function DashboardSidebar({ children }: DashboardSidebarProps) {
 
         {/* User info */}
         {!collapsed && user && (
-          <div className="p-4 border-t border-gray-200">
+          <div className="p-4 border-t border-border">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-medium">
+              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                <span className="text-primary-foreground text-sm font-medium">
                   {user.name?.charAt(0).toUpperCase()}
                 </span>
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-gray-900 truncate">
+                <p className="text-sm font-medium text-card-foreground truncate">
                   {user.name}
                 </p>
-                <p className="text-xs text-gray-500 capitalize">
+                <p className="text-xs text-muted-foreground capitalize">
                   {user.role}
                 </p>
               </div>
