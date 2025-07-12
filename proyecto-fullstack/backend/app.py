@@ -201,6 +201,31 @@ def create_app(config_name=None):
                 'connection_status': 'ERROR'
             }), 500
     
+    # Endpoint de diagnóstico de rutas
+    @app.route('/debug/routes', methods=['GET'])
+    def debug_routes():
+        """Endpoint de diagnóstico para verificar todas las rutas registradas"""
+        try:
+            routes = []
+            for rule in app.url_map.iter_rules():
+                routes.append({
+                    'endpoint': rule.endpoint,
+                    'methods': list(rule.methods),
+                    'rule': rule.rule
+                })
+            
+            return jsonify({
+                'success': True,
+                'total_routes': len(routes),
+                'routes': routes
+            }), 200
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'message': f'Error al obtener rutas: {str(e)}'
+            }), 500
+
     # Ruta raíz con información de la API
     @app.route('/', methods=['GET'])
     def root():

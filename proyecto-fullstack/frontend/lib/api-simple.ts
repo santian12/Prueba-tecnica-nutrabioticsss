@@ -89,7 +89,7 @@ httpClient.interceptors.response.use(
 export async function loginUser(data: LoginData): Promise<AuthResponse> {
   console.log('🔐 Iniciando login...');
   try {
-    const response = await httpClient.post('/auth/login', data);
+    const response = await httpClient.post('/api/auth/login', data);
     console.log('✅ Login exitoso');
     return response.data;
   } catch (error) {
@@ -105,7 +105,7 @@ export async function registerUser(data: RegisterData): Promise<AuthResponse> {
   console.log('📝 Valores:', Object.values(data));
   
   try {
-    const response = await httpClient.post('/auth/register', data);
+    const response = await httpClient.post('/api/auth/register', data);
     console.log('✅ Registro exitoso');
     return response.data;
   } catch (error) {
@@ -129,7 +129,7 @@ export async function updateProfile(userData: {
   console.log('📝 Datos a actualizar:', userData);
   
   try {
-    const response = await httpClient.put('/auth/profile', userData);
+    const response = await httpClient.put('/api/auth/profile', userData);
     console.log('✅ Perfil actualizado exitosamente');
     return response.data;
   } catch (error) {
@@ -152,7 +152,7 @@ export async function getProjects(params?: {
 }): Promise<{ projects: any[]; pagination?: any }> {
   console.log('📋 Obteniendo proyectos...');
   try {
-    const response = await httpClient.get('/projects', { params });
+    const response = await httpClient.get('/api/projects', { params });
     console.log('✅ Proyectos obtenidos');
     return {
       projects: response.data.projects || [],
@@ -167,7 +167,7 @@ export async function getProjects(params?: {
 export async function getProject(id: string): Promise<any> {
   console.log('📋 Obteniendo proyecto:', id);
   try {
-    const response = await httpClient.get(`/projects/${id}`);
+    const response = await httpClient.get(`/api/projects/${id}`);
     console.log('✅ Proyecto obtenido');
     return response.data.project;
   } catch (error) {
@@ -179,7 +179,7 @@ export async function getProject(id: string): Promise<any> {
 export async function createProject(data: any): Promise<any> {
   console.log('📋 Creando proyecto...');
   try {
-    const response = await httpClient.post('/projects', data);
+    const response = await httpClient.post('/api/projects', data);
     console.log('✅ Proyecto creado');
     return response.data.project;
   } catch (error) {
@@ -191,7 +191,7 @@ export async function createProject(data: any): Promise<any> {
 export async function updateProject(id: string, data: any): Promise<any> {
   console.log('📋 Actualizando proyecto:', id);
   try {
-    const response = await httpClient.put(`/projects/${id}`, data);
+    const response = await httpClient.put(`/api/projects/${id}`, data);
     console.log('✅ Proyecto actualizado');
     return response.data.project;
   } catch (error) {
@@ -203,7 +203,7 @@ export async function updateProject(id: string, data: any): Promise<any> {
 export async function deleteProject(id: string): Promise<void> {
   console.log('📋 Eliminando proyecto:', id);
   try {
-    await httpClient.delete(`/projects/${id}`);
+    await httpClient.delete(`/api/projects/${id}`);
     console.log('✅ Proyecto eliminado');
   } catch (error) {
     console.error('❌ Error al eliminar proyecto:', error);
@@ -215,7 +215,7 @@ export async function deleteProject(id: string): Promise<void> {
 export async function getTasks(): Promise<any[]> {
   console.log('📝 Obteniendo tareas...');
   try {
-    const response = await httpClient.get('/tasks');
+    const response = await httpClient.get('/api/tasks');
     console.log('✅ Tareas obtenidas');
     return response.data.data || [];
   } catch (error) {
@@ -227,7 +227,7 @@ export async function getTasks(): Promise<any[]> {
 export async function getProjectTasks(projectId: string): Promise<any[]> {
   console.log('📝 Obteniendo tareas del proyecto:', projectId);
   try {
-    const response = await httpClient.get(`/projects/${projectId}/tasks`);
+    const response = await httpClient.get(`/api/projects/${projectId}/tasks`);
     console.log('✅ Tareas del proyecto obtenidas');
     return response.data.tasks || [];
   } catch (error) {
@@ -239,7 +239,7 @@ export async function getProjectTasks(projectId: string): Promise<any[]> {
 export async function createTask(projectId: string, data: any): Promise<any> {
   console.log('📝 Creando tarea en proyecto:', projectId);
   try {
-    const response = await httpClient.post(`/projects/${projectId}/tasks`, data);
+    const response = await httpClient.post(`/api/projects/${projectId}/tasks`, data);
     console.log('✅ Tarea creada');
     return response.data.task;
   } catch (error) {
@@ -251,7 +251,7 @@ export async function createTask(projectId: string, data: any): Promise<any> {
 export async function updateTask(id: string, data: any): Promise<any> {
   console.log('📝 Actualizando tarea:', id);
   try {
-    const response = await httpClient.put(`/tasks/${id}`, data);
+    const response = await httpClient.put(`/api/tasks/${id}`, data);
     console.log('✅ Tarea actualizada');
     return response.data.task;
   } catch (error) {
@@ -263,7 +263,7 @@ export async function updateTask(id: string, data: any): Promise<any> {
 export async function updateTaskStatus(id: string, status: string): Promise<any> {
   console.log('📝 Actualizando estado de tarea:', id, 'a', status);
   try {
-    const response = await httpClient.put(`/tasks/${id}`, { status });
+    const response = await httpClient.put(`/api/tasks/${id}`, { status });
     console.log('✅ Estado de tarea actualizado');
     return response.data.task;
   } catch (error) {
@@ -275,7 +275,7 @@ export async function updateTaskStatus(id: string, status: string): Promise<any>
 export async function deleteTask(id: string): Promise<void> {
   console.log('📝 Eliminando tarea:', id);
   try {
-    await httpClient.delete(`/tasks/${id}`);
+    await httpClient.delete(`/api/tasks/${id}`);
     console.log('✅ Tarea eliminada');
   } catch (error) {
     console.error('❌ Error al eliminar tarea:', error);
@@ -287,7 +287,7 @@ export async function deleteTask(id: string): Promise<void> {
 export async function forgotPassword(email: string): Promise<{ success: boolean; message: string }> {
   console.log('🔐 Forgot password attempt for email:', email);
   try {
-    const response = await httpClient.post('/auth/forgot-password', { email });
+    const response = await httpClient.post('/api/auth/forgot-password', { email });
     console.log('✅ Forgot password response:', response.data);
     return response.data;
   } catch (error) {
@@ -299,7 +299,7 @@ export async function forgotPassword(email: string): Promise<{ success: boolean;
 export async function verifyResetToken(token: string): Promise<{ success: boolean; message: string; user_email?: string }> {
   console.log('🔍 Verify reset token:', token);
   try {
-    const response = await httpClient.post('/auth/verify-reset-token', { token });
+    const response = await httpClient.post('/api/auth/verify-reset-token', { token });
     console.log('✅ Verify token response:', response.data);
     return response.data;
   } catch (error) {
@@ -311,7 +311,7 @@ export async function verifyResetToken(token: string): Promise<{ success: boolea
 export async function resetPassword(token: string, password: string): Promise<{ success: boolean; message: string }> {
   console.log('🔑 Reset password with token:', token);
   try {
-    const response = await httpClient.post('/auth/reset-password', { token, password });
+    const response = await httpClient.post('/api/auth/reset-password', { token, password });
     console.log('✅ Reset password response:', response.data);
     return response.data;
   } catch (error) {
@@ -341,7 +341,7 @@ interface UpdateUserData {
 export async function getUsers(): Promise<{ success: boolean; data: any[]; total: number }> {
   console.log('👥 Fetching users...');
   try {
-    const response = await httpClient.get('/users');
+    const response = await httpClient.get('/api/users');
     console.log('✅ Users response:', response.data);
     return response.data;
   } catch (error) {
@@ -353,7 +353,7 @@ export async function getUsers(): Promise<{ success: boolean; data: any[]; total
 export async function createUser(userData: CreateUserData): Promise<{ success: boolean; message: string; user?: any }> {
   console.log('➕ Creating user:', userData);
   try {
-    const response = await httpClient.post('/users', userData);
+    const response = await httpClient.post('/api/users', userData);
     console.log('✅ Create user response:', response.data);
     return response.data;
   } catch (error) {
@@ -365,7 +365,7 @@ export async function createUser(userData: CreateUserData): Promise<{ success: b
 export async function updateUser(userId: string, userData: UpdateUserData): Promise<{ success: boolean; message: string; user?: any }> {
   console.log('✏️ Updating user:', userId, userData);
   try {
-    const response = await httpClient.put(`/users/${userId}`, userData);
+    const response = await httpClient.put(`/api/users/${userId}`, userData);
     console.log('✅ Update user response:', response.data);
     return response.data;
   } catch (error) {
@@ -381,7 +381,7 @@ export async function updateUser(userId: string, userData: UpdateUserData): Prom
 export async function getOverviewStats(): Promise<{ success: boolean; data: any }> {
   console.log('📊 Fetching overview stats...');
   try {
-    const response = await httpClient.get('/stats/overview');
+    const response = await httpClient.get('/api/metrics/overview');
     console.log('✅ Overview stats response:', response.data);
     return response.data;
   } catch (error) {
@@ -393,7 +393,7 @@ export async function getOverviewStats(): Promise<{ success: boolean; data: any 
 export async function getProjectStats(): Promise<{ success: boolean; data: any }> {
   console.log('📈 Fetching project stats...');
   try {
-    const response = await httpClient.get('/stats/projects');
+    const response = await httpClient.get('/api/metrics/projects');
     console.log('✅ Project stats response:', response.data);
     return response.data;
   } catch (error) {
@@ -405,7 +405,7 @@ export async function getProjectStats(): Promise<{ success: boolean; data: any }
 export async function getTaskStats(): Promise<{ success: boolean; data: any }> {
   console.log('📉 Fetching task stats...');
   try {
-    const response = await httpClient.get('/stats/tasks');
+    const response = await httpClient.get('/api/metrics/tasks');
     console.log('✅ Task stats response:', response.data);
     return response.data;
   } catch (error) {
@@ -429,7 +429,7 @@ interface UpdateCommentData {
 export async function getTaskComments(taskId: string): Promise<{ success: boolean; data: any[]; total: number }> {
   console.log('💬 Fetching task comments...');
   try {
-    const response = await httpClient.get(`/tasks/${taskId}/comments`);
+    const response = await httpClient.get(`/api/tasks/${taskId}/comments`);
     console.log('✅ Task comments response:', response.data);
     return response.data;
   } catch (error) {
@@ -441,7 +441,7 @@ export async function getTaskComments(taskId: string): Promise<{ success: boolea
 export async function createComment(taskId: string, commentData: CreateCommentData): Promise<{ success: boolean; message: string; comment?: any }> {
   console.log('💬 Creating comment for task:', taskId);
   try {
-    const response = await httpClient.post(`/tasks/${taskId}/comments`, commentData);
+    const response = await httpClient.post(`/api/tasks/${taskId}/comments`, commentData);
     console.log('✅ Create comment response:', response.data);
     return response.data;
   } catch (error) {
@@ -453,7 +453,7 @@ export async function createComment(taskId: string, commentData: CreateCommentDa
 export async function updateComment(commentId: string, commentData: UpdateCommentData): Promise<{ success: boolean; message: string; comment?: any }> {
   console.log('💬 Updating comment:', commentId);
   try {
-    const response = await httpClient.put(`/comments/${commentId}`, commentData);
+    const response = await httpClient.put(`/api/tasks/comments/${commentId}`, commentData);
     console.log('✅ Update comment response:', response.data);
     return response.data;
   } catch (error) {
@@ -465,7 +465,7 @@ export async function updateComment(commentId: string, commentData: UpdateCommen
 export async function deleteComment(commentId: string): Promise<{ success: boolean; message: string }> {
   console.log('💬 Deleting comment:', commentId);
   try {
-    const response = await httpClient.delete(`/comments/${commentId}`);
+    const response = await httpClient.delete(`/api/tasks/comments/${commentId}`);
     console.log('✅ Delete comment response:', response.data);
     return response.data;
   } catch (error) {

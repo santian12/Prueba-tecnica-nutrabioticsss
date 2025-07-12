@@ -7,9 +7,9 @@ from services.project_service import ProjectService
 from services.task_service import TaskService
 from utils.auth_decorators import require_role
 
-projects_bp = Blueprint('projects', __name__, url_prefix='/projects')
+projects_bp = Blueprint('projects', __name__)
 
-@projects_bp.route('', methods=['GET'])
+@projects_bp.route('/projects', methods=['GET'])
 @jwt_required()
 def get_projects():
     """Obtener todos los proyectos"""
@@ -27,7 +27,7 @@ def get_projects():
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error en el servidor: {str(e)}'}), 500
 
-@projects_bp.route('/<project_id>', methods=['GET'])
+@projects_bp.route('/projects/<project_id>', methods=['GET'])
 @jwt_required()
 def get_project(project_id):
     """Obtener proyecto específico"""
@@ -45,7 +45,7 @@ def get_project(project_id):
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error en el servidor: {str(e)}'}), 500
 
-@projects_bp.route('', methods=['POST'])
+@projects_bp.route('/projects', methods=['POST'])
 @require_role('admin', 'project_manager')
 def create_project():
     """Crear nuevo proyecto"""
@@ -74,7 +74,7 @@ def create_project():
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error en el servidor: {str(e)}'}), 500
 
-@projects_bp.route('/<project_id>', methods=['PUT'])
+@projects_bp.route('/projects/<project_id>', methods=['PUT'])
 @require_role('admin', 'project_manager')
 def update_project(project_id):
     """Actualizar proyecto"""
@@ -98,7 +98,7 @@ def update_project(project_id):
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error en el servidor: {str(e)}'}), 500
 
-@projects_bp.route('/<project_id>', methods=['DELETE'])
+@projects_bp.route('/projects/<project_id>', methods=['DELETE'])
 @require_role('admin', 'project_manager')
 def delete_project(project_id):
     """Eliminar proyecto"""
@@ -116,7 +116,7 @@ def delete_project(project_id):
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error en el servidor: {str(e)}'}), 500
 
-@projects_bp.route('/<project_id>/stats', methods=['GET'])
+@projects_bp.route('/projects/<project_id>/stats', methods=['GET'])
 @jwt_required()
 def get_project_stats(project_id):
     """Obtener estadísticas del proyecto"""
@@ -134,7 +134,7 @@ def get_project_stats(project_id):
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error en el servidor: {str(e)}'}), 500
 
-@projects_bp.route('/<project_id>/tasks', methods=['GET'])
+@projects_bp.route('/projects/<project_id>/tasks', methods=['GET'])
 @jwt_required()
 def get_project_tasks(project_id):
     """Obtener todas las tareas de un proyecto"""
@@ -152,7 +152,7 @@ def get_project_tasks(project_id):
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error en el servidor: {str(e)}'}), 500
 
-@projects_bp.route('/<project_id>/tasks', methods=['POST'])
+@projects_bp.route('/projects/<project_id>/tasks', methods=['POST'])
 @jwt_required()
 def create_project_task(project_id):
     """Crear nueva tarea en un proyecto"""
