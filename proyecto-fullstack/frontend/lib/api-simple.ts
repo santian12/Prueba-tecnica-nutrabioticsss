@@ -480,7 +480,7 @@ export async function deleteComment(commentId: string): Promise<{ success: boole
 
 export const exportProjectsPDF = async (projectId?: string): Promise<Blob> => {
   try {
-    const url = projectId ? `/reports/projects/pdf?project_id=${projectId}` : '/reports/projects/pdf';
+    const url = projectId ? `/api/reports/projects/pdf?project_id=${projectId}` : '/api/reports/projects/pdf';
     const response = await httpClient.get(url, {
       responseType: 'blob'
     });
@@ -493,7 +493,7 @@ export const exportProjectsPDF = async (projectId?: string): Promise<Blob> => {
 
 export const exportProductivityPDF = async (userId?: string, dateRange?: string): Promise<Blob> => {
   try {
-    let url = '/reports/productivity/pdf';
+    let url = '/api/reports/productivity/pdf';
     const params = new URLSearchParams();
     
     if (userId) {
@@ -519,7 +519,7 @@ export const exportProductivityPDF = async (userId?: string, dateRange?: string)
 
 export const exportDashboardPDF = async (): Promise<Blob> => {
   try {
-    const response = await httpClient.get('/reports/dashboard/pdf', {
+    const response = await httpClient.get('/api/reports/dashboard/pdf', {
       responseType: 'blob'
     });
     return response.data;

@@ -90,6 +90,22 @@ export function debounce<T extends (...args: any[]) => void>(
   }
 }
 
+// Función segura para parsear fechas que pueden ser nulas o inválidas
+export function safeParseDate(date: string | Date | null | undefined): Date | null {
+  if (!date) return null
+  
+  try {
+    const dateObj = new Date(date)
+    // Verificar si la fecha es válida
+    if (isNaN(dateObj.getTime())) {
+      return null
+    }
+    return dateObj
+  } catch (error) {
+    return null
+  }
+}
+
 export function generateId(): string {
   return Math.random().toString(36).substr(2, 9)
 }

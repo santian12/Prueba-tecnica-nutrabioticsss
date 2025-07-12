@@ -6,7 +6,7 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameM
 import { es } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, User, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { cn } from '@/lib/utils';
+import { cn, safeParseDate } from '@/lib/utils';
 
 interface Task {
   id: string;
@@ -54,12 +54,9 @@ export default function CalendarPage() {
   const getTasksForDate = (date: Date): Task[] => {
     return tasks.filter(task => {
       if (!task.dueDate) return false;
-      try {
-        const taskDate = parseISO(task.dueDate);
-        return isSameDay(taskDate, date);
-      } catch {
-        return false;
-      }
+      const taskDate = safeParseDate(task.dueDate);
+      if (!taskDate) return false;
+      return isSameDay(taskDate, date);
     });
   };
 
@@ -121,20 +118,18 @@ export default function CalendarPage() {
   // Obtener tareas próximas a vencer (próximos 7 días)
   const getUpcomingTasks = () => {
     const today = new Date();
-    const nextWeek = addMonths(today, 0);
+    const nextWeek = new Date(today);
     nextWeek.setDate(today.getDate() + 7);
 
     return tasks.filter(task => {
       if (!task.dueDate) return false;
-      try {
-        const taskDate = parseISO(task.dueDate);
-        return taskDate >= today && taskDate <= nextWeek && task.status !== 'done';
-      } catch {
-        return false;
-      }
+      const taskDate = safeParseDate(task.dueDate);
+      if (!taskDate) return false;
+      return taskDate >= today && taskDate <= nextWeek && task.status !== 'done';
     }).sort((a, b) => {
-      const dateA = parseISO(a.dueDate);
-      const dateB = parseISO(b.dueDate);
+      const dateA = safeParseDate(a.dueDate);
+      const dateB = safeParseDate(b.dueDate);
+      if (!dateA || !dateB) return 0;
       return dateA.getTime() - dateB.getTime();
     });
   };
@@ -144,15 +139,13 @@ export default function CalendarPage() {
     const today = new Date();
     return tasks.filter(task => {
       if (!task.dueDate) return false;
-      try {
-        const taskDate = parseISO(task.dueDate);
-        return taskDate < today && task.status !== 'done';
-      } catch {
-        return false;
-      }
+      const taskDate = safeParseDate(task.dueDate);
+      if (!taskDate) return false;
+      return taskDate < today && task.status !== 'done';
     }).sort((a, b) => {
-      const dateA = parseISO(a.dueDate);
-      const dateB = parseISO(b.dueDate);
+      const dateA = safeParseDate(a.dueDate);
+      const dateB = safeParseDate(b.dueDate);
+      if (!dateA || !dateB) return 0;
       return dateB.getTime() - dateA.getTime(); // Más recientes primero
     });
   };
@@ -332,7 +325,7 @@ export default function CalendarPage() {
                   <div key={task.id} className="p-2 border border-red-200 rounded-lg bg-red-50">
                     <div className="font-medium text-sm text-red-900">{task.title}</div>
                     <div className="text-xs text-red-600 mt-1">
-                      Vencía: {format(parseISO(task.dueDate), 'd MMM yyyy', { locale: es })}
+                      Vencía: {safeParseDate(task.dueDate) ? format(safeParseDate(task.dueDate)!, 'd MMM yyyy', { locale: es }) : 'Fecha inválida'}
                     </div>
                     <div className="flex items-center text-xs text-red-500 space-x-2 mt-1">
                       <User className="w-3 h-3" />
@@ -363,7 +356,7 @@ export default function CalendarPage() {
                       </span>
                     </div>
                     <div className="text-xs text-gray-600 mb-1">
-                      {format(parseISO(task.dueDate), 'd MMM yyyy', { locale: es })}
+                      {safeParseDate(task.dueDate) ? format(safeParseDate(task.dueDate)!, 'd MMM yyyy', { locale: es }) : 'Fecha inválida'}
                     </div>
                     <div className="flex items-center text-xs text-gray-500 space-x-2">
                       <User className="w-3 h-3" />
