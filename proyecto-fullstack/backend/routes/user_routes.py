@@ -9,10 +9,21 @@ from utils.auth_decorators import require_role
 users_bp = Blueprint('users', __name__, url_prefix='/users')
 
 @users_bp.route('', methods=['GET'])
-@require_role('admin')
+@jwt_required()
 def get_all_users():
-    """Obtener todos los usuarios (solo admin)"""
+    """Obtener todos los usuarios"""
     try:
+        # Verificar rol del usuario actual
+        current_user_id = get_jwt_identity()
+        current_user, error = AuthService.get_user_by_id(current_user_id)
+        
+        if error:
+            return jsonify({'success': False, 'message': 'Usuario no encontrado'}), 404
+        
+        # Solo admin puede ver todos los usuarios
+        if current_user.get('role') != 'admin':
+            return jsonify({'success': False, 'message': 'Acceso denegado. Se requiere rol de administrador'}), 403
+        
         users, error = AuthService.get_all_users()
         
         if error:
