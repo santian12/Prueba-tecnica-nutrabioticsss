@@ -4,7 +4,7 @@ export interface User {
   email: string;
   role: 'admin' | 'project_manager' | 'developer';
   avatar?: string;
-  createdAt: string;
+  created_at: string;
 }
 
 export interface Project {

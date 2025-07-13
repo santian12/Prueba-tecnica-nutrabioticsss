@@ -95,6 +95,7 @@ export function TaskModal({ isOpen, onClose, task, projectId }: TaskModalProps) 
           due_date: data.due_date && data.due_date.trim() !== '' ? data.due_date : undefined,
           assigned_to: data.assigned_to && data.assigned_to.trim() !== '' ? data.assigned_to : undefined
         };
+        console.log('[MODAL] updateTask called with:', task.id, updateData);
         await updateTask(task.id, updateData)
         toast.success('Tarea actualizada exitosamente')
       } else {
@@ -108,8 +109,8 @@ export function TaskModal({ isOpen, onClose, task, projectId }: TaskModalProps) 
           description: data.description,
           status: data.status,
           priority: data.priority,
-          due_date: data.due_date && data.due_date.trim() !== '' ? data.due_date : undefined,
-          assigned_to: data.assigned_to && data.assigned_to.trim() !== '' ? data.assigned_to : undefined,
+          due_date: (typeof data.due_date === 'string' && data.due_date.trim() !== '') ? data.due_date : undefined,
+          assigned_to: (typeof data.assigned_to === 'string' && data.assigned_to.trim() !== '') ? data.assigned_to : undefined,
           project_id: projectId
         }
         await createTask(projectId, createData)

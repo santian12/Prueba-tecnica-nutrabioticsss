@@ -248,8 +248,8 @@ export async function createTask(projectId: string, data: any): Promise<any> {
       description: data.description || '',
       status: data.status || 'todo',
       priority: data.priority || 'medium',
-      assigned_to: data.assignedTo || data.assigned_to || null,
-      due_date: data.dueDate || data.due_date || null,
+      assigned_to: data.assigned_to || null,
+      due_date: data.due_date || null,
       project_id: projectId
     };
     
@@ -282,8 +282,8 @@ export async function updateTask(id: string, data: any): Promise<any> {
       description: data.description,
       status: data.status,
       priority: data.priority,
-      assigned_to: data.assignedTo || data.assigned_to,
-      due_date: data.dueDate || data.due_date
+      assigned_to: data.assigned_to,
+      due_date: data.due_date
     };
     
     // Eliminar campos undefined para evitar problemas

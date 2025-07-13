@@ -247,9 +247,9 @@ export default function DashboardPage() {
                       </span>
                     </div>
                     <div>
-                      <span className="font-medium">Creado:</span>
+                      <span className="font-medium">Fecha límite:</span>
                       <span className="ml-2">
-                        {safeFormatDate(selectedProject.created_at)}
+                        {selectedProject.end_date ? safeFormatDate(selectedProject.end_date) : 'Sin fecha'}
                       </span>
                     </div>
                   </div>

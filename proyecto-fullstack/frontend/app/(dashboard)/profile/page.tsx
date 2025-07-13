@@ -200,7 +200,7 @@ export default function ProfilePage() {
               <div className="flex items-center space-x-2">
                 <Calendar className="w-4 h-4 text-muted-foreground" />
                 <p className="text-muted-foreground">
-                  {user?.createdAt ? formatDate(user.createdAt) : 'No disponible'}
+                  {user?.created_at ? formatDate(user.created_at) : 'No disponible'}
                 </p>
               </div>
             </div>
