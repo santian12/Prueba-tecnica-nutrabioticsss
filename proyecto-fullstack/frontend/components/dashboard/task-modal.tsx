@@ -88,12 +88,12 @@ export function TaskModal({ isOpen, onClose, task, projectId }: TaskModalProps) 
   const onSubmit = async (data: TaskFormData) => {
     try {
       setIsSubmitting(true)
-      
       if (task) {
-        // Para actualización, también limpiar fechas vacías
+        // Para actualización, también limpiar fechas vacías y usar snake_case
         const updateData = {
           ...data,
-          due_date: data.due_date && data.due_date.trim() !== '' ? data.due_date : undefined
+          due_date: data.due_date && data.due_date.trim() !== '' ? data.due_date : undefined,
+          assigned_to: data.assigned_to && data.assigned_to.trim() !== '' ? data.assigned_to : undefined
         };
         await updateTask(task.id, updateData)
         toast.success('Tarea actualizada exitosamente')
@@ -102,19 +102,19 @@ export function TaskModal({ isOpen, onClose, task, projectId }: TaskModalProps) 
           toast.error('No se ha seleccionado un proyecto')
           return
         }
-        // Cast the data to match the required CreateTaskData type
+        // Mapear a snake_case para el backend
         const createData = {
           title: data.title,
           description: data.description,
           status: data.status,
           priority: data.priority,
-          dueDate: data.due_date && data.due_date.trim() !== '' ? data.due_date : undefined,
-          assignedTo: data.assigned_to && data.assigned_to.trim() !== '' ? data.assigned_to : undefined
+          due_date: data.due_date && data.due_date.trim() !== '' ? data.due_date : undefined,
+          assigned_to: data.assigned_to && data.assigned_to.trim() !== '' ? data.assigned_to : undefined,
+          project_id: projectId
         }
         await createTask(projectId, createData)
         toast.success('Tarea creada exitosamente')
       }
-      
       onClose()
       reset()
     } catch (error) {
