@@ -249,7 +249,7 @@ export default function DashboardPage() {
                     <div>
                       <span className="font-medium">Creado:</span>
                       <span className="ml-2">
-                        {safeFormatDate(selectedProject.createdAt)}
+                        {safeFormatDate(selectedProject.created_at)}
                       </span>
                     </div>
                   </div>

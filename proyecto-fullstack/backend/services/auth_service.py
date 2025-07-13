@@ -167,11 +167,18 @@ class AuthService:
     def get_user_by_id(user_id):
         """Obtener usuario por ID"""
         try:
+            print(f"[DEBUG] Looking for user with ID: {user_id}")
             user = User.query.get(user_id)
+            print(f"[DEBUG] User found: {user}")
+            if user:
+                print(f"[DEBUG] User is_active: {user.is_active}")
             if not user or not user.is_active:
                 return None, "Usuario no encontrado"
-            return user.to_dict(), None
+            result = user.to_dict()
+            print(f"[DEBUG] User dict: {result}")
+            return result, None
         except Exception as e:
+            print(f"[DEBUG] Exception in get_user_by_id: {str(e)}")
             return None, f"Error al obtener usuario: {str(e)}"
 
     @staticmethod

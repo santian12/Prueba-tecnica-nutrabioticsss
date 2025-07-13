@@ -71,10 +71,10 @@ export function TaskCard({ task, onEdit, onShowComments, isDragging = false }: T
             {translateTaskPriority(task.priority)}
           </Badge>
           
-          {task.dueDate && safeFormatDate(task.dueDate) !== 'Sin fecha' && (
+          {task.due_date && safeFormatDate(task.due_date) !== 'Sin fecha' && (
             <div className="flex items-center text-xs text-gray-500">
               <Calendar size={12} className="mr-1" />
-              {safeFormatDate(task.dueDate)}
+              {safeFormatDate(task.due_date)}
             </div>
           )}
         </div>
@@ -115,7 +115,7 @@ export function TaskCard({ task, onEdit, onShowComments, isDragging = false }: T
             
             <div className="flex items-center text-xs text-gray-500">
               <Clock size={12} className="mr-1" />
-              {safeFormatDate(task.createdAt)}
+              {safeFormatDate(task.created_at)}
             </div>
           </div>
         </div>

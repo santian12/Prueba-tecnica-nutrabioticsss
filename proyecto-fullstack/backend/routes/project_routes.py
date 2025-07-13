@@ -174,11 +174,16 @@ def create_project_task(project_id):
         if not data or not data.get('title'):
             return jsonify({'success': False, 'message': 'Título de la tarea es requerido'}), 400
         
-        # Agregar el project_id a los datos
-        data['project_id'] = project_id
-        data['created_by'] = current_user_id
-        
-        task, error = TaskService.create_task(**data)
+        # Solo pasar los parámetros que acepta TaskService.create_task
+        task, error = TaskService.create_task(
+            title=data['title'],
+            description=data.get('description', ''),
+            project_id=project_id,
+            assigned_to=data.get('assigned_to'),
+            status=data.get('status', 'todo'),
+            priority=data.get('priority', 'medium'),
+            due_date=data.get('due_date')
+        )
         
         if error:
             return jsonify({'success': False, 'message': error}), 400

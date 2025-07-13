@@ -47,7 +47,7 @@ export function ProjectModal({ isOpen, onClose, project }: ProjectModalProps) {
     defaultValues: project ? {
       name: project.name,
       description: project.description,
-      end_date: safeToDateInputString(project.endDate),
+      end_date: safeToDateInputString(project.end_date),
       status: project.status,
       priority: project.priority
     } : {
@@ -64,7 +64,7 @@ export function ProjectModal({ isOpen, onClose, project }: ProjectModalProps) {
       reset({
         name: project.name,
         description: project.description,
-        end_date: safeToDateInputString(project.endDate),
+        end_date: safeToDateInputString(project.end_date),
         status: project.status,
         priority: project.priority
       })

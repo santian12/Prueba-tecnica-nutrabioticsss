@@ -51,8 +51,8 @@ export function TaskModal({ isOpen, onClose, task, projectId }: TaskModalProps) 
       description: task.description,
       status: task.status,
       priority: task.priority,
-      due_date: safeToDateInputString(task.dueDate),
-      assigned_to: task.assignedTo
+      due_date: safeToDateInputString(task.due_date),
+      assigned_to: task.assigned_to
     } : {
       title: '',
       description: '',
@@ -70,8 +70,8 @@ export function TaskModal({ isOpen, onClose, task, projectId }: TaskModalProps) 
         description: task.description,
         status: task.status,
         priority: task.priority,
-        due_date: safeToDateInputString(task.dueDate),
-        assigned_to: task.assignedTo
+        due_date: safeToDateInputString(task.due_date),
+        assigned_to: task.assigned_to
       })
     } else {
       reset({

@@ -239,8 +239,30 @@ export async function getProjectTasks(projectId: string): Promise<any[]> {
 
 export async function createTask(projectId: string, data: any): Promise<any> {
   console.log('📝 Creando tarea en proyecto:', projectId);
+  console.log('📤 Request:', 'POST', `/api/projects/${projectId}/tasks`, data);
+  
   try {
-    const response = await httpClient.post(`/api/projects/${projectId}/tasks`, data);
+    // Mapear los datos para que coincidan con lo que espera el backend
+    const backendData = {
+      title: data.title,
+      description: data.description || '',
+      status: data.status || 'todo',
+      priority: data.priority || 'medium',
+      assigned_to: data.assignedTo || data.assigned_to || null,
+      due_date: data.dueDate || data.due_date || null,
+      project_id: projectId
+    };
+    
+    // Eliminar campos null para evitar problemas
+    Object.keys(backendData).forEach(key => {
+      if (backendData[key] === null || backendData[key] === undefined) {
+        delete backendData[key];
+      }
+    });
+    
+    console.log('📤 Datos mapeados para backend:', backendData);
+    
+    const response = await httpClient.post(`/api/projects/${projectId}/tasks`, backendData);
     console.log('✅ Tarea creada');
     return response.data.task;
   } catch (error) {
@@ -252,8 +274,28 @@ export async function createTask(projectId: string, data: any): Promise<any> {
 export async function updateTask(id: string, data: any): Promise<any> {
   console.log('📝 Actualizando tarea:', id);
   console.log('📝 Datos enviados:', JSON.stringify(data, null, 2));
+  
   try {
-    const response = await httpClient.put(`/api/tasks/${id}`, data);
+    // Mapear los datos para que coincidan con lo que espera el backend
+    const backendData = {
+      title: data.title,
+      description: data.description,
+      status: data.status,
+      priority: data.priority,
+      assigned_to: data.assignedTo || data.assigned_to,
+      due_date: data.dueDate || data.due_date
+    };
+    
+    // Eliminar campos undefined para evitar problemas
+    Object.keys(backendData).forEach(key => {
+      if (backendData[key] === undefined || backendData[key] === null || backendData[key] === '') {
+        delete backendData[key];
+      }
+    });
+    
+    console.log('📤 Datos mapeados para backend:', backendData);
+    
+    const response = await httpClient.put(`/api/tasks/${id}`, backendData);
     console.log('✅ Tarea actualizada');
     return response.data.task;
   } catch (error) {
