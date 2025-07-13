@@ -90,7 +90,12 @@ export function TaskModal({ isOpen, onClose, task, projectId }: TaskModalProps) 
       setIsSubmitting(true)
       
       if (task) {
-        await updateTask(task.id, data)
+        // Para actualización, también limpiar fechas vacías
+        const updateData = {
+          ...data,
+          due_date: data.due_date && data.due_date.trim() !== '' ? data.due_date : undefined
+        };
+        await updateTask(task.id, updateData)
         toast.success('Tarea actualizada exitosamente')
       } else {
         if (!projectId) {
@@ -103,8 +108,8 @@ export function TaskModal({ isOpen, onClose, task, projectId }: TaskModalProps) 
           description: data.description,
           status: data.status,
           priority: data.priority,
-          dueDate: data.due_date || undefined,
-          assignedTo: data.assigned_to || undefined
+          dueDate: data.due_date && data.due_date.trim() !== '' ? data.due_date : undefined,
+          assignedTo: data.assigned_to && data.assigned_to.trim() !== '' ? data.assigned_to : undefined
         }
         await createTask(projectId, createData)
         toast.success('Tarea creada exitosamente')

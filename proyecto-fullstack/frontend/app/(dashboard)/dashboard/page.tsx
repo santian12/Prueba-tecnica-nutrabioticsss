@@ -14,7 +14,7 @@ import { ProjectModal } from '@/components/dashboard/project-modal'
 import { TaskModal } from '@/components/dashboard/task-modal'
 import { Navbar } from '@/components/dashboard/navbar'
 import { Plus, Search, Filter } from 'lucide-react'
-import { cn, getProjectStatusColor, safeFormatDate } from '@/lib/utils'
+import { cn, getProjectStatusColor, safeFormatDate, translateProjectStatus } from '@/lib/utils'
 import toast from 'react-hot-toast'
 
 export default function DashboardPage() {
@@ -243,7 +243,7 @@ export default function DashboardPage() {
                         "ml-2 px-2 py-1 rounded-full text-xs",
                         getProjectStatusColor(selectedProject.status)
                       )}>
-                        {selectedProject.status}
+                        {translateProjectStatus(selectedProject.status)}
                       </span>
                     </div>
                     <div>

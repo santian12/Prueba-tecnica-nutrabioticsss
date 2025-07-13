@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Task } from '@/lib/types'
-import { cn, getTaskPriorityColor, safeFormatDate } from '@/lib/utils'
+import { cn, getTaskPriorityColor, safeFormatDate, translateTaskPriority } from '@/lib/utils'
 import { Edit, User, Clock, Calendar, MessageCircle } from 'lucide-react'
 
 interface TaskCardProps {
@@ -68,10 +68,10 @@ export function TaskCard({ task, onEdit, onShowComments, isDragging = false }: T
               getTaskPriorityColor(task.priority)
             )}
           >
-            {task.priority}
+            {translateTaskPriority(task.priority)}
           </Badge>
           
-          {task.dueDate && (
+          {task.dueDate && safeFormatDate(task.dueDate) !== 'Sin fecha' && (
             <div className="flex items-center text-xs text-gray-500">
               <Calendar size={12} className="mr-1" />
               {safeFormatDate(task.dueDate)}

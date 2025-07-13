@@ -29,7 +29,7 @@ export function safeFormatDate(date: string | Date | null | undefined): string {
     
     return new Intl.DateTimeFormat('es-ES', {
       year: 'numeric',
-      month: 'long',
+      month: 'short',
       day: 'numeric'
     }).format(dateObj)
   } catch (error) {
@@ -165,14 +165,46 @@ export function getProjectStatusColor(status: string): string {
   switch (status.toLowerCase()) {
     case 'completed':
       return 'bg-green-100 text-green-800'
-    case 'in_progress':
+    case 'active':
       return 'bg-blue-100 text-blue-800'
     case 'planning':
       return 'bg-yellow-100 text-yellow-800'
+    case 'on_hold':
+      return 'bg-orange-100 text-orange-800'
     case 'cancelled':
       return 'bg-red-100 text-red-800'
     default:
       return 'bg-gray-100 text-gray-800'
+  }
+}
+
+export function translateProjectStatus(status: string): string {
+  switch (status.toLowerCase()) {
+    case 'planning':
+      return 'Planificación'
+    case 'active':
+      return 'Activo'
+    case 'on_hold':
+      return 'En Espera'
+    case 'completed':
+      return 'Completado'
+    case 'cancelled':
+      return 'Cancelado'
+    default:
+      return status
+  }
+}
+
+export function translateTaskPriority(priority: string): string {
+  switch (priority.toLowerCase()) {
+    case 'low':
+      return 'Baja'
+    case 'medium':
+      return 'Media'
+    case 'high':
+      return 'Alta'
+    default:
+      return priority
   }
 }
 

@@ -26,7 +26,7 @@ class ProjectService:
         return project.to_dict(include_tasks=True), None
 
     @staticmethod
-    def create_project(name, description, created_by):
+    def create_project(name, description, created_by, **kwargs):
         """Crear nuevo proyecto"""
         try:
             project = Project(
@@ -34,6 +34,11 @@ class ProjectService:
                 description=description,
                 created_by=created_by
             )
+            
+            # Agregar campos opcionales si están presentes
+            for key, value in kwargs.items():
+                if hasattr(project, key) and value is not None:
+                    setattr(project, key, value)
             
             db.session.add(project)
             db.session.commit()

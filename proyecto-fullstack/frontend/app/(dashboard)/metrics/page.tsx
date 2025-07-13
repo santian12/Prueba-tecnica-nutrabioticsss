@@ -114,7 +114,8 @@ export default function MetricsPage() {
   const formatStatusData = (data: StatusData[]) => {
     const statusLabels = {
       'planning': 'Planificación',
-      'in_progress': 'En Progreso',
+      'active': 'Activo',
+      'on_hold': 'En Espera',
       'completed': 'Completado',
       'cancelled': 'Cancelado',
       'todo': 'Por Hacer',
@@ -310,7 +311,8 @@ export default function MetricsPage() {
                     </span>
                     <span className={`text-xs px-2 py-0.5 rounded-full ${
                       project.status === 'completed' ? 'bg-green-100 text-green-800' :
-                      project.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                      project.status === 'active' ? 'bg-blue-100 text-blue-800' :
+                      project.status === 'on_hold' ? 'bg-orange-100 text-orange-800' :
                       project.status === 'planning' ? 'bg-yellow-100 text-yellow-800' :
                       'bg-gray-100 text-gray-800'
                     }`}>
@@ -336,7 +338,8 @@ export default function MetricsPage() {
               <Tooltip />
               <Legend />
               <Bar dataKey="todo" stackId="a" fill={COLORS.danger} name="Por Hacer" />
-              <Bar dataKey="in_progress" stackId="a" fill={COLORS.accent} name="En Progreso" />
+              <Bar dataKey="active" stackId="a" fill={COLORS.accent} name="Activo" />
+              <Bar dataKey="on_hold" stackId="a" fill="#f97316" name="En Espera" />
               <Bar dataKey="review" stackId="a" fill={COLORS.info} name="En Revisión" />
               <Bar dataKey="done" stackId="a" fill={COLORS.secondary} name="Completado" />
             </BarChart>

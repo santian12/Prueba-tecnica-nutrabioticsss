@@ -83,10 +83,9 @@ def create_task():
             description=data.get('description', ''),
             project_id=data['project_id'],
             assigned_to=data.get('assigned_to'),
-            status=data.get('status', 'pendiente'),
-            priority=data.get('priority', 'media'),
-            due_date=data.get('due_date'),
-            created_by=current_user_id
+            status=data.get('status', 'todo'),
+            priority=data.get('priority', 'medium'),
+            due_date=data.get('due_date')
         )
         
         if error:

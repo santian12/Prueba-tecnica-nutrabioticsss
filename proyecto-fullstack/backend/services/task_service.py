@@ -88,7 +88,7 @@ class TaskService:
         return task.to_dict(include_comments=True), None
 
     @staticmethod
-    def create_task(title, description, project_id, assigned_to=None, priority='medium', due_date=None):
+    def create_task(title, description, project_id, assigned_to=None, priority='medium', status='todo', due_date=None):
         """Crear nueva tarea"""
         # Verificar que el proyecto existe
         project = Project.query.get(project_id)
@@ -108,6 +108,7 @@ class TaskService:
                 project_id=project_id,
                 assigned_to=assigned_to,
                 priority=priority,
+                status=status,
                 due_date=datetime.strptime(due_date, '%Y-%m-%d').date() if due_date else None
             )
             
@@ -122,22 +123,48 @@ class TaskService:
     @staticmethod
     def update_task(task_id, **kwargs):
         """Actualizar tarea"""
+        print(f"🔧 UPDATE_TASK - ID: {task_id}")
+        print(f"🔧 UPDATE_TASK - Datos recibidos: {kwargs}")
+        
         task = Task.query.get(task_id)
         if not task:
             return None, "Tarea no encontrada"
         
+        # Validar que el status sea un valor válido del enum, no un UUID
+        if 'status' in kwargs:
+            valid_statuses = ['todo', 'in_progress', 'review', 'done']
+            print(f"🔧 Validando status: '{kwargs['status']}'")
+            if kwargs['status'] not in valid_statuses:
+                return None, f"Estado inválido '{kwargs['status']}'. Debe ser uno de: {', '.join(valid_statuses)}"
+        
+        # Validar priority también
+        if 'priority' in kwargs:
+            valid_priorities = ['low', 'medium', 'high', 'critical']
+            print(f"🔧 Validando priority: '{kwargs['priority']}'")
+            if kwargs['priority'] not in valid_priorities:
+                return None, f"Prioridad inválida '{kwargs['priority']}'. Debe ser una de: {', '.join(valid_priorities)}"
+        
         try:
             # Manejar fecha especial
             if 'due_date' in kwargs and kwargs['due_date']:
+                print(f"🔧 Procesando fecha: {kwargs['due_date']}")
                 kwargs['due_date'] = datetime.strptime(kwargs['due_date'], '%Y-%m-%d').date()
             
+            print(f"🔧 Actualizando campos...")
             for key, value in kwargs.items():
                 if hasattr(task, key):
+                    print(f"🔧   {key}: {value}")
                     setattr(task, key, value)
+                else:
+                    print(f"⚠️  Campo ignorado (no existe): {key}")
             
+            print(f"🔧 Commitando cambios...")
             db.session.commit()
+            print(f"✅ Tarea actualizada exitosamente")
             return task.to_dict(), None
         except Exception as e:
+            print(f"❌ Error al actualizar tarea: {str(e)}")
+            print(f"❌ Tipo de error: {type(e).__name__}")
             db.session.rollback()
             return None, f"Error al actualizar tarea: {str(e)}"
 

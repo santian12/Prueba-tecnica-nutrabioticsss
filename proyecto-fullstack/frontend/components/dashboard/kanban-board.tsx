@@ -58,12 +58,47 @@ export function KanbanBoard({ tasks, onEditTask, isLoading }: KanbanBoardProps) 
     const { active, over } = event
     setActiveTask(null)
 
+    console.log('🔍 DRAG END DEBUG:')
+    console.log('🔍 active:', active)
+    console.log('🔍 active.id:', active.id)
+    console.log('🔍 over:', over)
+    console.log('🔍 over?.id:', over?.id)
+
     if (!over) return
 
     const taskId = active.id as string
-    const newStatus = over.id as string
+    const overId = over.id as string
 
-    console.log('🔄 Drag end - taskId:', taskId, 'newStatus:', newStatus)
+    console.log('🔄 Drag end - taskId:', taskId, 'overId:', overId)
+
+    // Verificar que estamos droppando sobre una columna, no sobre una tarea
+    let newStatus: string | null = null
+
+    if (overId.startsWith('column-')) {
+      // Es una columna válida
+      newStatus = overId.replace('column-', '')
+      console.log('🔄 Dropping over column:', newStatus)
+    } else {
+      // Se está droppando sobre una tarea, buscar la columna de esa tarea
+      const targetTask = tasks.find(task => task.id === overId)
+      if (targetTask) {
+        newStatus = targetTask.status
+        console.log('🔄 Dropping over task, using its column status:', newStatus)
+      } else {
+        console.error('❌ Cannot determine target column for:', overId)
+        toast.error('Invalid drop target')
+        return
+      }
+    }
+
+    // Validar que newStatus es un estado válido
+    const validColumn = columns.find(c => c.id === newStatus)
+    if (!validColumn) {
+      console.error('❌ Invalid column ID:', newStatus)
+      console.log('🔍 Expected column IDs:', columns.map(c => c.id))
+      toast.error('Invalid column selected')
+      return
+    }
 
     // Find the task being moved
     const task = tasks.find(t => t.id === taskId)
@@ -76,13 +111,16 @@ export function KanbanBoard({ tasks, onEditTask, isLoading }: KanbanBoardProps) 
     console.log('🔄 Current status:', task.status, '-> New status:', newStatus)
 
     // If the status hasn't changed, don't update
-    if (task.status === newStatus) return
+    if (task.status === newStatus) {
+      console.log('🔄 Status unchanged, skipping update')
+      return
+    }
 
     try {
       // Update the task status
       console.log('🚀 Calling updateTaskStatus with:', taskId, newStatus)
       await updateTaskStatus(taskId, newStatus)
-      toast.success(`Task moved to "${columns.find(c => c.id === newStatus)?.title}"`)
+      toast.success(`Task moved to "${validColumn.title}"`)
     } catch (error) {
       toast.error('Error updating task status')
       console.error('❌ Error updating task status:', error)

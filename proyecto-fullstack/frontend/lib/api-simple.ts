@@ -190,6 +190,7 @@ export async function createProject(data: any): Promise<any> {
 
 export async function updateProject(id: string, data: any): Promise<any> {
   console.log('📋 Actualizando proyecto:', id);
+  console.log('📋 Datos enviados:', JSON.stringify(data, null, 2));
   try {
     const response = await httpClient.put(`/api/projects/${id}`, data);
     console.log('✅ Proyecto actualizado');
@@ -250,6 +251,7 @@ export async function createTask(projectId: string, data: any): Promise<any> {
 
 export async function updateTask(id: string, data: any): Promise<any> {
   console.log('📝 Actualizando tarea:', id);
+  console.log('📝 Datos enviados:', JSON.stringify(data, null, 2));
   try {
     const response = await httpClient.put(`/api/tasks/${id}`, data);
     console.log('✅ Tarea actualizada');

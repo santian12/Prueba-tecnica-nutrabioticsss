@@ -30,7 +30,8 @@ export interface SearchFilters {
 
 const statusOptions = [
   { value: 'todo', label: 'Por hacer', color: 'bg-gray-500' },
-  { value: 'in_progress', label: 'En progreso', color: 'bg-blue-500' },
+  { value: 'active', label: 'Activo', color: 'bg-blue-500' },
+  { value: 'on_hold', label: 'En espera', color: 'bg-orange-500' },
   { value: 'review', label: 'En revisión', color: 'bg-purple-500' },
   { value: 'done', label: 'Completado', color: 'bg-green-500' },
 ];

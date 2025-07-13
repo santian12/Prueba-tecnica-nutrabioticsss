@@ -11,7 +11,7 @@ export interface Project {
   id: string;
   name: string;
   description?: string;
-  status: 'planning' | 'in_progress' | 'completed' | 'cancelled';
+  status: 'planning' | 'active' | 'on_hold' | 'completed' | 'cancelled';
   priority: 'low' | 'medium' | 'high';
   startDate?: string;
   endDate?: string;

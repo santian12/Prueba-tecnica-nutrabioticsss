@@ -20,7 +20,7 @@ const projectSchema = z.object({
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
   description: z.string().min(10, 'La descripción debe tener al menos 10 caracteres'),
   end_date: z.string().optional(),
-  status: z.enum(['planning', 'in_progress', 'completed', 'cancelled']).default('planning'),
+  status: z.enum(['planning', 'active', 'on_hold', 'completed', 'cancelled']).default('planning'),
   priority: z.enum(['low', 'medium', 'high']).default('medium')
 })
 
@@ -84,14 +84,19 @@ export function ProjectModal({ isOpen, onClose, project }: ProjectModalProps) {
       setIsSubmitting(true)
       
       if (project) {
-        await updateProject(project.id, data)
+        // Para actualización, también limpiar fechas vacías
+        const updateData = {
+          ...data,
+          end_date: data.end_date && data.end_date.trim() !== '' ? data.end_date : undefined
+        };
+        await updateProject(project.id, updateData)
         toast.success('Proyecto actualizado exitosamente')
       } else {
         // Ensure required fields are present for CreateProjectData type
         const projectData = {
           name: data.name,
           description: data.description,
-          end_date: data.end_date || undefined,
+          end_date: data.end_date && data.end_date.trim() !== '' ? data.end_date : undefined,
           status: data.status as Required<typeof data.status>,
           priority: data.priority as Required<typeof data.priority>
         };
@@ -232,7 +237,8 @@ export function ProjectModal({ isOpen, onClose, project }: ProjectModalProps) {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="planning">Planificación</SelectItem>
-                      <SelectItem value="in_progress">En Progreso</SelectItem>
+                      <SelectItem value="active">Activo</SelectItem>
+                      <SelectItem value="on_hold">En Espera</SelectItem>
                       <SelectItem value="completed">Completado</SelectItem>
                       <SelectItem value="cancelled">Cancelado</SelectItem>
                     </SelectContent>

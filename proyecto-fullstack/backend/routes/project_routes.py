@@ -56,10 +56,21 @@ def create_project():
         if not data or not data.get('name'):
             return jsonify({'success': False, 'message': 'Nombre del proyecto es requerido'}), 400
         
+        # Extraer campos requeridos
+        name = data['name']
+        description = data.get('description', '')
+        
+        # Extraer campos opcionales
+        optional_fields = {}
+        for field in ['status', 'priority', 'end_date']:
+            if field in data and data[field] is not None:
+                optional_fields[field] = data[field]
+        
         project, error = ProjectService.create_project(
-            name=data['name'],
-            description=data.get('description', ''),
-            created_by=current_user_id
+            name=name,
+            description=description,
+            created_by=current_user_id,
+            **optional_fields
         )
         
         if error:
