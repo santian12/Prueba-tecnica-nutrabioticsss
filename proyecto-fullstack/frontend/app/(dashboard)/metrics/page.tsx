@@ -87,9 +87,16 @@ export default function MetricsPage() {
 
       // Cargar estadísticas de proyectos
       const projectStatsResponse = await getProjectStats();
+      let projectsProgressData = [];
       if (projectStatsResponse.success) {
-        setProjectsProgress(projectStatsResponse.data.projects_progress);
+        // Soportar ambas respuestas: data.metrics.projects_progress o data.projects_progress
+        if (projectStatsResponse.data?.metrics?.projects_progress) {
+          projectsProgressData = projectStatsResponse.data.metrics.projects_progress;
+        } else if (projectStatsResponse.data?.projects_progress) {
+          projectsProgressData = projectStatsResponse.data.projects_progress;
+        }
       }
+      setProjectsProgress(Array.isArray(projectsProgressData) ? projectsProgressData : []);
 
       // Cargar estadísticas de tareas
       const taskStatsResponse = await getTaskStats();

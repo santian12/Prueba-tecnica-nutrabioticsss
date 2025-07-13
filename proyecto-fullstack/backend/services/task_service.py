@@ -9,6 +9,43 @@ from models.user import User
 
 class TaskService:
     @staticmethod
+    def get_tasks_stats(filters=None):
+        """Obtener estadísticas de tareas con filtros opcionales"""
+        try:
+            query = Task.query
+            if filters:
+                if 'project_id' in filters:
+                    query = query.filter(Task.project_id == filters['project_id'])
+                if 'assigned_to' in filters:
+                    query = query.filter(Task.assigned_to == filters['assigned_to'])
+            tasks = query.all()
+            total_tasks = len(tasks)
+            tasks_by_status = {
+                'todo': len([t for t in tasks if t.status == 'todo']),
+                'in_progress': len([t for t in tasks if t.status == 'in_progress']),
+                'review': len([t for t in tasks if t.status == 'review']),
+                'done': len([t for t in tasks if t.status == 'done'])
+            }
+            tasks_by_priority = {
+                'high': len([t for t in tasks if t.priority == 'high']),
+                'medium': len([t for t in tasks if t.priority == 'medium']),
+                'low': len([t for t in tasks if t.priority == 'low'])
+            }
+            completed_tasks = len([t for t in tasks if t.status == 'done'])
+            in_progress_tasks = len([t for t in tasks if t.status == 'in_progress'])
+            pending_tasks = len([t for t in tasks if t.status == 'todo'])
+            metrics = {
+                'total_tasks': total_tasks,
+                'tasks_by_status': tasks_by_status,
+                'tasks_by_priority': tasks_by_priority,
+                'completed_tasks': completed_tasks,
+                'in_progress_tasks': in_progress_tasks,
+                'pending_tasks': pending_tasks
+            }
+            return metrics, None
+        except Exception as e:
+            return None, str(e)
+    @staticmethod
     def get_all_tasks(filters=None):
         """Obtener todas las tareas con filtros opcionales"""
         try:
