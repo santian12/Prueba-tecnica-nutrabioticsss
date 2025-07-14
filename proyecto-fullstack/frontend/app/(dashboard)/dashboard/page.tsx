@@ -40,6 +40,13 @@ export default function DashboardPage() {
   const [selectedTask, setSelectedTask] = useState<any>(null)
   const [editingProject, setEditingProject] = useState<any>(null)
   const [showFilters, setShowFilters] = useState(false)
+  // Estado de filtros para el modal y para el Kanban
+  const [filters, setFilters] = useState<{
+    status?: string;
+    assignedTo?: string;
+    priority?: string;
+    search?: string;
+  }>({})
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -65,10 +72,30 @@ export default function DashboardPage() {
     }
   }, [selectedProject]) // Removemos fetchTasks de las dependencias
 
-  const filteredTasks = tasks.filter(task => 
-    task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    task.description?.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  // Filtrado real combinando búsqueda y filtros avanzados
+  const filteredTasks = tasks.filter(task => {
+    // Filtro de búsqueda
+    if (searchTerm && !task.title.toLowerCase().includes(searchTerm.toLowerCase()) && !(task.description || '').toLowerCase().includes(searchTerm.toLowerCase())) {
+      return false;
+    }
+    // Filtro de estado
+    if (filters.status && task.status !== filters.status) return false;
+    // Filtro de prioridad
+    if (filters.priority && task.priority !== filters.priority) return false;
+    // Filtro de responsable (por id o nombre parcial)
+    if (filters.assignedTo) {
+      const assigned = (task.assigned_to || '');
+      if (!assigned.toLowerCase().includes(filters.assignedTo.toLowerCase())) return false;
+    }
+    // Filtro de búsqueda avanzada
+    if (filters.search) {
+      const search = filters.search.toLowerCase();
+      if (!task.title.toLowerCase().includes(search) && !(task.description || '').toLowerCase().includes(search)) {
+        return false;
+      }
+    }
+    return true;
+  })
 
   const handleCreateProject = () => {
     setEditingProject(null)
@@ -218,7 +245,7 @@ export default function DashboardPage() {
                 </Button>
               </div>
             )}
-            {/* Modal de Filtros */}
+            {/* Modal de Filtros funcional */}
             {showFilters && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
                 <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl p-6 w-full max-w-sm relative">
@@ -228,13 +255,74 @@ export default function DashboardPage() {
                   >
                     ×
                   </button>
-                  <h2 className="text-lg font-bold mb-4 text-foreground">Filtros (próximamente)</h2>
-                  <p className="text-muted-foreground">Aquí podrás filtrar tareas por estado, prioridad, responsable, etc.</p>
-                  <div className="mt-6 flex justify-end">
-                    <Button variant="outline" onClick={() => setShowFilters(false)}>
-                      Cerrar
-                    </Button>
-                  </div>
+                  <h2 className="text-lg font-bold mb-4 text-foreground">Filtros</h2>
+                  <p className="text-muted-foreground mb-4">Filtra tareas por estado, prioridad, responsable, etc.</p>
+                  <form
+                    onSubmit={e => {
+                      e.preventDefault();
+                      setShowFilters(false);
+                    }}
+                  >
+                    <div className="space-y-3">
+                      {/* Estado */}
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Estado</label>
+                        <select
+                          className="w-full border rounded px-2 py-1 bg-background"
+                          value={filters?.status || ''}
+                          onChange={e => setFilters(f => ({ ...f, status: e.target.value || undefined }))}
+                        >
+                          <option value="">Todos</option>
+                          <option value="todo">Por hacer</option>
+                          <option value="in_progress">En progreso</option>
+                          <option value="review">En revisión</option>
+                          <option value="done">Hecho</option>
+                        </select>
+                      </div>
+                      {/* Prioridad */}
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Prioridad</label>
+                        <select
+                          className="w-full border rounded px-2 py-1 bg-background"
+                          value={filters?.priority || ''}
+                          onChange={e => setFilters(f => ({ ...f, priority: e.target.value || undefined }))}
+                        >
+                          <option value="">Todas</option>
+                          <option value="low">Baja</option>
+                          <option value="medium">Media</option>
+                          <option value="high">Alta</option>
+                        </select>
+                      </div>
+                      {/* Responsable */}
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Responsable</label>
+                        <input
+                          type="text"
+                          className="w-full border rounded px-2 py-1 bg-background"
+                          placeholder="ID o nombre de usuario"
+                          value={filters?.assignedTo || ''}
+                          onChange={e => setFilters(f => ({ ...f, assignedTo: e.target.value || undefined }))}
+                        />
+                      </div>
+                      {/* Búsqueda */}
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Buscar en título/descripción</label>
+                        <input
+                          type="text"
+                          className="w-full border rounded px-2 py-1 bg-background"
+                          placeholder="Buscar..."
+                          value={filters?.search || ''}
+                          onChange={e => setFilters(f => ({ ...f, search: e.target.value || undefined }))}
+                        />
+                      </div>
+                    </div>
+                    <div className="mt-6 flex justify-end space-x-2">
+                      <Button variant="outline" type="button" onClick={() => setShowFilters(false)}>
+                        Cancelar
+                      </Button>
+                      <Button type="submit">Aplicar</Button>
+                    </div>
+                  </form>
                 </div>
               </div>
             )}

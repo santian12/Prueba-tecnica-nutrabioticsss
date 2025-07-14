@@ -236,7 +236,7 @@ export function TaskModal({ isOpen, onClose, task, projectId }: TaskModalProps) 
                   name="status"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={value => field.onChange(value || 'todo')} value={field.value || 'todo'}>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Selecciona el estado" />
                       </SelectTrigger>
@@ -250,7 +250,7 @@ export function TaskModal({ isOpen, onClose, task, projectId }: TaskModalProps) 
                   )}
                 />
                 {errors.status && (
-                  <p className="text-sm text-destructive">{errors.status.message}</p>
+                  <p className="text-sm text-destructive">{errors.status.message === 'Invalid enum value. Expected \'todo\' | \'in_progress\' | \'review\' | \'done\', received \'' ? 'Selecciona un estado válido.' : errors.status.message}</p>
                 )}
               </div>
 
@@ -260,7 +260,7 @@ export function TaskModal({ isOpen, onClose, task, projectId }: TaskModalProps) 
                   name="priority"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={value => field.onChange(value || 'medium')} value={field.value || 'medium'}>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Selecciona la prioridad" />
                       </SelectTrigger>
@@ -273,7 +273,7 @@ export function TaskModal({ isOpen, onClose, task, projectId }: TaskModalProps) 
                   )}
                 />
                 {errors.priority && (
-                  <p className="text-sm text-destructive">{errors.priority.message}</p>
+                  <p className="text-sm text-destructive">{errors.priority.message === 'Invalid enum value. Expected \'low\' | \'medium\' | \'high\', received \'' ? 'Selecciona una prioridad válida.' : errors.priority.message}</p>
                 )}
               </div>
             </div>
@@ -314,19 +314,9 @@ export function TaskModal({ isOpen, onClose, task, projectId }: TaskModalProps) 
                 </div>
               ) : null}
               </div>
-            <div className="flex space-x-3 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleClose}
-                className="flex-1"
-                disabled={isSubmitting}
-              >
-                Cancelar
-              </Button>
+            <div className="flex flex-row-reverse items-center gap-2 pt-4">
               <Button
                 type="submit"
-                className="flex-1"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
@@ -335,22 +325,31 @@ export function TaskModal({ isOpen, onClose, task, projectId }: TaskModalProps) 
                   task ? 'Actualizar' : 'Crear'
                 )}
               </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleClose}
+                disabled={isSubmitting}
+              >
+                Cancelar
+              </Button>
+              {/* Botón eliminar solo para admin o manager y si es edición */}
+              {task && user && (user.role === 'admin' || user.role === 'project_manager') && (
+                <Button
+                  variant="destructive"
+                  onClick={handleDeleteTask}
+                  disabled={isDeleting}
+                  className="flex items-center justify-center"
+                >
+                  {isDeleting ? <LoadingSpinner size="sm" className="mr-2" /> : <Trash2 className="w-4 h-4 mr-2" />}
+                  Eliminar Tarea
+                </Button>
+              )}
             </div>
           </form>
         </CardContent>
       </Card>
-      {/* Botón eliminar solo para admin o manager y si es edición */}
-      {task && user && (user.role === 'admin' || user.role === 'project_manager') && (
-        <Button
-          variant="destructive"
-          onClick={handleDeleteTask}
-          disabled={isDeleting}
-          className="mt-4 w-full flex items-center justify-center"
-        >
-          {isDeleting ? <LoadingSpinner size="sm" className="mr-2" /> : <Trash2 className="w-4 h-4 mr-2" />}
-          Eliminar Tarea
-        </Button>
-      )}
+      
     </div>
   )
 }
