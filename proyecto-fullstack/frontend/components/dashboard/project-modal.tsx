@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useProjectStore } from '@/lib/store/projectStore'
@@ -10,7 +10,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Project } from '@/lib/types'
+import { safeToDateInputString } from '@/lib/utils'
 import { X } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -18,7 +20,7 @@ const projectSchema = z.object({
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
   description: z.string().min(10, 'La descripción debe tener al menos 10 caracteres'),
   end_date: z.string().optional(),
-  status: z.enum(['planning', 'in_progress', 'completed', 'cancelled']).default('planning'),
+  status: z.enum(['planning', 'active', 'on_hold', 'completed', 'cancelled']).default('planning'),
   priority: z.enum(['low', 'medium', 'high']).default('medium')
 })
 
@@ -38,13 +40,14 @@ export function ProjectModal({ isOpen, onClose, project }: ProjectModalProps) {
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors }
   } = useForm<ProjectFormData>({
     resolver: zodResolver(projectSchema),
     defaultValues: project ? {
       name: project.name,
       description: project.description,
-      end_date: project.endDate ? new Date(project.endDate).toISOString().split('T')[0] : '',
+      end_date: safeToDateInputString(project.end_date),
       status: project.status,
       priority: project.priority
     } : {
@@ -61,7 +64,7 @@ export function ProjectModal({ isOpen, onClose, project }: ProjectModalProps) {
       reset({
         name: project.name,
         description: project.description,
-        end_date: project.endDate ? new Date(project.endDate).toISOString().split('T')[0] : '',
+        end_date: safeToDateInputString(project.end_date),
         status: project.status,
         priority: project.priority
       })
@@ -81,14 +84,19 @@ export function ProjectModal({ isOpen, onClose, project }: ProjectModalProps) {
       setIsSubmitting(true)
       
       if (project) {
-        await updateProject(project.id, data)
+        // Para actualización, también limpiar fechas vacías
+        const updateData = {
+          ...data,
+          end_date: data.end_date && data.end_date.trim() !== '' ? data.end_date : undefined
+        };
+        await updateProject(project.id, updateData)
         toast.success('Proyecto actualizado exitosamente')
       } else {
         // Ensure required fields are present for CreateProjectData type
         const projectData = {
           name: data.name,
           description: data.description,
-          end_date: data.end_date || undefined,
+          end_date: data.end_date && data.end_date.trim() !== '' ? data.end_date : undefined,
           status: data.status as Required<typeof data.status>,
           priority: data.priority as Required<typeof data.priority>
         };
@@ -97,8 +105,20 @@ export function ProjectModal({ isOpen, onClose, project }: ProjectModalProps) {
       }      
       onClose()
       reset()
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Error al guardar el proyecto'
+    } catch (error: any) {
+      console.error('Error al procesar proyecto:', error)
+      
+      // Mejor manejo de errores para el usuario final
+      let errorMessage = 'Error inesperado. Inténtalo de nuevo.'
+      
+      if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message
+      } else if (error?.message) {
+        errorMessage = error.message
+      } else if (typeof error === 'string') {
+        errorMessage = error
+      }
+      
       toast.error(errorMessage)
     } finally {
       setIsSubmitting(false)
@@ -113,15 +133,15 @@ export function ProjectModal({ isOpen, onClose, project }: ProjectModalProps) {
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <Card className="w-full max-w-md mx-4">
+    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
+      <Card className="w-full max-w-md mx-4 bg-card border-border">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-lg">
+              <CardTitle className="text-lg text-card-foreground">
                 {project ? 'Editar Proyecto' : 'Crear Proyecto'}
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-muted-foreground">
                 {project ? 'Actualiza la información del proyecto' : 'Crea un nuevo proyecto para tu equipo'}
               </CardDescription>
             </div>
@@ -139,31 +159,31 @@ export function ProjectModal({ isOpen, onClose, project }: ProjectModalProps) {
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Nombre del Proyecto</Label>
+              <Label htmlFor="name" className="text-card-foreground">Nombre del Proyecto</Label>
               <Input
                 id="name"
                 placeholder="Ej: Sistema de Gestión de Inventario"
                 {...register('name')}
-                className={errors.name ? 'border-red-500' : ''}
+                className={errors.name ? 'border-destructive focus:ring-destructive' : ''}
               />
               {errors.name && (
-                <p className="text-sm text-red-600">{errors.name.message}</p>
+                <p className="text-sm text-destructive">{errors.name.message}</p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Descripción</Label>
+              <Label htmlFor="description" className="text-card-foreground">Descripción</Label>
               <textarea
                 id="description"
                 placeholder="Describe el objetivo y alcance del proyecto..."
                 rows={3}
                 {...register('description')}
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none ${
-                  errors.description ? 'border-red-500' : 'border-gray-300'
+                className={`flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none ${
+                  errors.description ? 'border-destructive focus-visible:ring-destructive' : ''
                 }`}
               />
               {errors.description && (
-                <p className="text-sm text-red-600">{errors.description.message}</p>
+                <p className="text-sm text-destructive">{errors.description.message}</p>
               )}
             </div>
 
@@ -183,35 +203,50 @@ export function ProjectModal({ isOpen, onClose, project }: ProjectModalProps) {
 
               <div className="space-y-2">
                 <Label htmlFor="priority">Prioridad</Label>
-                <select
-                  id="priority"
-                  {...register('priority')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="low">Baja</option>
-                  <option value="medium">Media</option>
-                  <option value="high">Alta</option>
-                </select>
+                <Controller
+                  name="priority"
+                  control={control}
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Selecciona la prioridad" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="low">Baja</SelectItem>
+                        <SelectItem value="medium">Media</SelectItem>
+                        <SelectItem value="high">Alta</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
                 {errors.priority && (
-                  <p className="text-sm text-red-600">{errors.priority.message}</p>
+                  <p className="text-sm text-destructive">{errors.priority.message}</p>
                 )}
               </div>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="status">Estado</Label>
-              <select
-                id="status"
-                {...register('status')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="planning">Planificación</option>
-                <option value="in_progress">En Progreso</option>
-                <option value="completed">Completado</option>
-                <option value="cancelled">Cancelado</option>
-              </select>
+              <Controller
+                name="status"
+                control={control}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Selecciona el estado" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="planning">Planificación</SelectItem>
+                      <SelectItem value="active">Activo</SelectItem>
+                      <SelectItem value="on_hold">En Espera</SelectItem>
+                      <SelectItem value="completed">Completado</SelectItem>
+                      <SelectItem value="cancelled">Cancelado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
               {errors.status && (
-                <p className="text-sm text-red-600">{errors.status.message}</p>
+                <p className="text-sm text-destructive">{errors.status.message}</p>
               )}
             </div>
 

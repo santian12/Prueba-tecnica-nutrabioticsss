@@ -4,19 +4,20 @@ export interface User {
   email: string;
   role: 'admin' | 'project_manager' | 'developer';
   avatar?: string;
-  createdAt: string;
+  created_at: string;
 }
 
 export interface Project {
   id: string;
   name: string;
   description?: string;
-  status: 'planning' | 'in_progress' | 'completed' | 'cancelled';
+  status: 'planning' | 'active' | 'on_hold' | 'completed' | 'cancelled';
   priority: 'low' | 'medium' | 'high';
-  startDate?: string;
-  endDate?: string;
-  createdAt: string;
-  managerId: string;
+  start_date?: string;
+  end_date?: string;
+  created_at: string;
+  updated_at?: string;
+  created_by: string;
   managerName?: string;
   developersIds?: string[];
   developers?: User[];
@@ -29,13 +30,14 @@ export interface Task {
   description?: string;
   status: 'todo' | 'in_progress' | 'review' | 'done';
   priority: 'low' | 'medium' | 'high';
-  projectId: string;
-  assignedTo?: string;
+  project_id: string;
+  assigned_to?: string;
   assignedUserName?: string;
   estimatedHours?: number;
   actualHours?: number;
-  dueDate?: string;
-  createdAt: string;
+  due_date?: string;
+  created_at: string;
+  updated_at?: string;
 }
 
 export interface LoginData {

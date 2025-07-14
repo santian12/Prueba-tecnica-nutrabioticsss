@@ -18,7 +18,7 @@ interface KanbanColumnProps {
 
 export function KanbanColumn({ id, title, tasks, color, onEditTask, onShowComments }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
-    id,
+    id: `column-${id}`, // Agregar prefijo para evitar conflictos
   })
 
   const taskIds = tasks.map(task => task.id)

@@ -6,9 +6,9 @@ from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from services.auth_service import AuthService
 from utils.auth_decorators import require_role
 
-auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
+auth_bp = Blueprint('auth', __name__)
 
-@auth_bp.route('/register', methods=['POST'])
+@auth_bp.route('/auth/register', methods=['POST'])
 def register():
     """Registro de nuevos usuarios"""
     try:
@@ -31,13 +31,15 @@ def register():
         return jsonify({
             'success': True,
             'message': 'Usuario registrado exitosamente',
-            'user': user_data
+            'user': user_data['user'],
+            'token': user_data['access_token'],
+            'refresh_token': user_data['refresh_token']
         }), 201
         
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error en el servidor: {str(e)}'}), 500
 
-@auth_bp.route('/login', methods=['POST'])
+@auth_bp.route('/auth/login', methods=['POST'])
 def login():
     """Login de usuarios"""
     try:
@@ -62,7 +64,7 @@ def login():
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error en el servidor: {str(e)}'}), 500
 
-@auth_bp.route('/refresh', methods=['POST'])
+@auth_bp.route('/auth/refresh', methods=['POST'])
 @jwt_required(refresh=True)
 def refresh():
     """Refrescar token de acceso"""
@@ -81,7 +83,7 @@ def refresh():
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error en el servidor: {str(e)}'}), 500
 
-@auth_bp.route('/logout', methods=['POST'])
+@auth_bp.route('/auth/logout', methods=['POST'])
 @jwt_required()
 def logout():
     """Logout de usuarios"""
@@ -100,7 +102,7 @@ def logout():
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error en el servidor: {str(e)}'}), 500
 
-@auth_bp.route('/forgot-password', methods=['POST'])
+@auth_bp.route('/auth/forgot-password', methods=['POST'])
 def forgot_password():
     """Solicitar reseteo de contraseña"""
     try:
@@ -120,7 +122,7 @@ def forgot_password():
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error en el servidor: {str(e)}'}), 500
 
-@auth_bp.route('/verify-reset-token', methods=['POST'])
+@auth_bp.route('/auth/verify-reset-token', methods=['POST'])
 def verify_reset_token():
     """Verificar token de reseteo"""
     try:
@@ -142,7 +144,7 @@ def verify_reset_token():
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error en el servidor: {str(e)}'}), 500
 
-@auth_bp.route('/reset-password', methods=['POST'])
+@auth_bp.route('/auth/reset-password', methods=['POST'])
 def reset_password():
     """Resetear contraseña"""
     try:
@@ -164,7 +166,37 @@ def reset_password():
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error en el servidor: {str(e)}'}), 500
 
-@auth_bp.route('/me', methods=['GET'])
+@auth_bp.route('/auth/profile', methods=['PUT'])
+@jwt_required()
+def update_profile():
+    """Actualizar perfil del usuario"""
+    try:
+        current_user_id = get_jwt_identity()
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({'success': False, 'message': 'No se proporcionaron datos para actualizar'}), 400
+        
+        user_data, error = AuthService.update_profile(
+            user_id=current_user_id,
+            name=data.get('name'),
+            email=data.get('email'),
+            password=data.get('password')
+        )
+        
+        if error:
+            return jsonify({'success': False, 'message': error}), 400
+        
+        return jsonify({
+            'success': True,
+            'message': 'Perfil actualizado exitosamente',
+            'user': user_data
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Error en el servidor: {str(e)}'}), 500
+
+@auth_bp.route('/auth/me', methods=['GET'])
 @jwt_required()
 def get_current_user():
     """Obtener información del usuario actual"""

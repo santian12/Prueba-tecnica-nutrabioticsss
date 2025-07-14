@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -25,9 +25,30 @@ type LoginFormData = z.infer<typeof loginSchema>
 
 export default function LoginPage() {
   const router = useRouter()
-  const { login, isLoading } = useAuthStore()
+  const { login, isLoading, isAuthenticated } = useAuthStore()
   const [showPassword, setShowPassword] = useState(false)
   const [loginError, setLoginError] = useState('')
+
+  // Solo redirigir si realmente está autenticado y no hay errores
+  useEffect(() => {
+    // Solo redirigir si está autenticado Y no hay errores de login
+    if (isAuthenticated && !loginError) {
+      console.log('🔄 [LoginPage] Usuario autenticado, redirigiendo al dashboard...');
+      router.push('/dashboard')
+    }
+  }, [isAuthenticated, router, loginError])
+
+  // Limpiar errores cuando el usuario cambie algún campo
+  useEffect(() => {
+    if (loginError) {
+      // Limpiar error después de 5 segundos o cuando el usuario empiece a interactuar
+      const timer = setTimeout(() => {
+        setLoginError('')
+      }, 5000)
+      
+      return () => clearTimeout(timer)
+    }
+  }, [loginError])
 
   const {
     register,
@@ -37,14 +58,27 @@ export default function LoginPage() {
     resolver: zodResolver(loginSchema)
   })
 
-  const onSubmit = async (data: LoginFormData) => {
+  const onSubmit = async (data: LoginFormData, event?: React.BaseSyntheticEvent) => {
+    // Prevenir el comportamiento por defecto del formulario
+    event?.preventDefault()
+    
     try {
+      console.log('🚪 [LoginPage] Iniciando login...');
+      // Limpiar errores previos al intentar nuevo login
       setLoginError('')
+      
       await login(data.email, data.password)
+      console.log('✅ [LoginPage] Login exitoso');
       toast.success('¡Bienvenido!')
-      router.push('/dashboard')
+      // No hacer router.push aquí, dejar que el useEffect lo maneje
     } catch (error) {
+      console.error('❌ [LoginPage] Error en login:', error);
+      console.error('❌ [LoginPage] Error tipo:', typeof error);
+      console.error('❌ [LoginPage] Error instanceof Error:', error instanceof Error);
+      console.error('❌ [LoginPage] Error.message:', (error as any)?.message);
+      
       const errorMessage = error instanceof Error ? error.message : 'Error al iniciar sesión'
+      console.log('💬 [LoginPage] Mensaje final mostrado:', errorMessage);
       setLoginError(errorMessage)
       toast.error(errorMessage)
     }
@@ -60,7 +94,17 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form 
+            onSubmit={handleSubmit(onSubmit)} 
+            className="space-y-4"
+            onKeyDown={(e) => {
+              // Prevenir comportamientos inesperados con Enter
+              if (e.key === 'Enter' && (e.target as HTMLElement).tagName !== 'BUTTON') {
+                e.preventDefault()
+                handleSubmit(onSubmit)()
+              }
+            }}
+          >
             {loginError && (
               <Alert variant="destructive">
                 <AlertDescription>{loginError}</AlertDescription>
@@ -75,6 +119,11 @@ export default function LoginPage() {
                 placeholder="tu@email.com"
                 {...register('email')}
                 className={errors.email ? 'border-red-500' : ''}
+                onChange={(e) => {
+                  register('email').onChange(e)
+                  // Limpiar error cuando el usuario empiece a escribir
+                  if (loginError) setLoginError('')
+                }}
               />
               {errors.email && (
                 <p className="text-sm text-red-600">{errors.email.message}</p>
@@ -90,6 +139,11 @@ export default function LoginPage() {
                   placeholder="Tu contraseña"
                   {...register('password')}
                   className={errors.password ? 'border-red-500' : ''}
+                  onChange={(e) => {
+                    register('password').onChange(e)
+                    // Limpiar error cuando el usuario empiece a escribir
+                    if (loginError) setLoginError('')
+                  }}
                 />
                 <button
                   type="button"

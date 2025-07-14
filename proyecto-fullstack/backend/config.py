@@ -48,5 +48,5 @@ config = {
 
 def get_config():
     """Obtener configuración basada en el entorno"""
-    env = os.getenv('ENVIRONMENT', 'development')
+    env = os.getenv('FLASK_ENV', 'development')
     return config.get(env, config['default'])

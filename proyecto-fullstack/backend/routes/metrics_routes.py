@@ -6,9 +6,9 @@ from flask_jwt_extended import jwt_required
 from services.project_service import ProjectService
 from services.task_service import TaskService
 
-metrics_bp = Blueprint('metrics', __name__, url_prefix='/metrics')
+metrics_bp = Blueprint('metrics', __name__)
 
-@metrics_bp.route('/general', methods=['GET'])
+@metrics_bp.route('/metrics/overview', methods=['GET'])
 @jwt_required()
 def get_general_metrics():
     """Obtener métricas generales del sistema"""
@@ -38,13 +38,13 @@ def get_general_metrics():
         
         return jsonify({
             'success': True,
-            'metrics': general_metrics
+            'data': general_metrics
         }), 200
         
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error en el servidor: {str(e)}'}), 500
 
-@metrics_bp.route('/projects', methods=['GET'])
+@metrics_bp.route('/metrics/projects', methods=['GET'])
 @jwt_required()
 def get_projects_metrics():
     """Obtener métricas específicas de proyectos"""
@@ -80,7 +80,7 @@ def get_project_metrics(project_id):
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error en el servidor: {str(e)}'}), 500
 
-@metrics_bp.route('/tasks', methods=['GET'])
+@metrics_bp.route('/metrics/tasks', methods=['GET'])
 @jwt_required()
 def get_tasks_metrics():
     """Obtener métricas específicas de tareas"""

@@ -13,12 +13,30 @@ from utils.email_service import send_password_reset_email
 
 class AuthService:
     @staticmethod
+    def delete_user(user_id):
+        """Soft delete: marcar usuario como inactivo"""
+        try:
+            user = User.query.get(user_id)
+            if not user or not user.is_active:
+                return False, "Usuario no encontrado"
+            user.is_active = False
+            db.session.commit()
+            return True, "Usuario eliminado (inactivado) correctamente"
+        except Exception as e:
+            db.session.rollback()
+            return False, f"Error al eliminar usuario: {str(e)}"
+    @staticmethod
     def login(email, password):
         """Autenticar usuario"""
         user = User.query.filter_by(email=email, is_active=True).first()
         
-        if not user or not user.check_password(password):
-            return None, "Credenciales inválidas"
+        # Usuario no encontrado
+        if not user:
+            return None, "Usuario no encontrado"
+        
+        # Contraseña incorrecta
+        if not user.check_password(password):
+            return None, "Contraseña incorrecta"
         
         access_token = create_access_token(identity=user.id)
         refresh_token = create_refresh_token(identity=user.id)
@@ -47,7 +65,17 @@ class AuthService:
         try:
             db.session.add(user)
             db.session.commit()
-            return user.to_dict(), None
+            
+            # Generar tokens al registrar (auto-login)
+            access_token = create_access_token(identity=user.id)
+            refresh_token = create_refresh_token(identity=user.id)
+            
+            return {
+                'user': user.to_dict(),
+                'access_token': access_token,
+                'refresh_token': refresh_token
+            }, None
+            
         except Exception as e:
             db.session.rollback()
             return None, f"Error al crear usuario: {str(e)}"
@@ -138,3 +166,81 @@ class AuthService:
         except Exception as e:
             db.session.rollback()
             return False, f"Error al actualizar contraseña: {str(e)}"
+
+    @staticmethod
+    def get_all_users():
+        """Obtener todos los usuarios"""
+        try:
+            users = User.query.filter_by(is_active=True).all()
+            return [user.to_dict() for user in users], None
+        except Exception as e:
+            return None, f"Error al obtener usuarios: {str(e)}"
+
+    @staticmethod
+    def get_user_by_id(user_id):
+        """Obtener usuario por ID"""
+        try:
+            print(f"[DEBUG] Looking for user with ID: {user_id}")
+            user = User.query.get(user_id)
+            print(f"[DEBUG] User found: {user}")
+            if user:
+                print(f"[DEBUG] User is_active: {user.is_active}")
+            if not user or not user.is_active:
+                return None, "Usuario no encontrado"
+            result = user.to_dict()
+            print(f"[DEBUG] User dict: {result}")
+            return result, None
+        except Exception as e:
+            print(f"[DEBUG] Exception in get_user_by_id: {str(e)}")
+            return None, f"Error al obtener usuario: {str(e)}"
+
+
+    @staticmethod
+    def update_user_profile(user_id, name=None, email=None, password=None, role=None):
+        """Actualizar datos de usuario (admin/manager)"""
+        try:
+            user = User.query.get(user_id)
+            if not user:
+                return None, "Usuario no encontrado"
+
+            # Verificar si el email ya existe en otro usuario
+            if email and email != user.email:
+                existing_user = User.query.filter_by(email=email).first()
+                if existing_user and existing_user.id != user.id:
+                    return None, "El email ya está en uso por otro usuario"
+
+            # Actualizar campos si se proporcionan
+            if name:
+                user.name = name
+            if email:
+                user.email = email
+            if password:
+                user.set_password(password)
+            if role:
+                user.role = role
+
+            db.session.commit()
+            return user.to_dict(), None
+        except Exception as e:
+            db.session.rollback()
+            return None, f"Error al actualizar usuario: {str(e)}"
+
+    @staticmethod
+    def create_user(name, email, password, role='developer'):
+        """Crear usuario desde el panel de administración (sin login automático)"""
+        # Verificar si el usuario ya existe
+        if User.query.filter_by(email=email).first():
+            return None, "El email ya está registrado"
+        user = User(
+            name=name,
+            email=email,
+            role=role
+        )
+        user.set_password(password)
+        try:
+            db.session.add(user)
+            db.session.commit()
+            return user.to_dict(), None
+        except Exception as e:
+            db.session.rollback()
+            return None, f"Error al crear usuario: {str(e)}"

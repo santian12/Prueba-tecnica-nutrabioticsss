@@ -51,9 +51,10 @@ export function PDFExportComponent({
       setLoading('projects');
       const blob = await exportProjectsPDF(projectId);
       
+      const today = new Date().toISOString().split('T')[0];
       const filename = projectId 
-        ? `reporte_proyecto_${projectId}_${new Date().toISOString().split('T')[0]}.pdf`
-        : `reporte_proyectos_${new Date().toISOString().split('T')[0]}.pdf`;
+        ? `reporte_proyecto_${projectId}_${today}.pdf`
+        : `reporte_proyectos_${today}.pdf`;
       
       downloadPDFBlob(blob, filename);
       toast.success('Reporte de proyectos exportado exitosamente');
@@ -70,9 +71,10 @@ export function PDFExportComponent({
       setLoading('productivity');
       const blob = await exportProductivityPDF(userId, dateRange);
       
+      const today = new Date().toISOString().split('T')[0];
       const filename = userId 
-        ? `reporte_productividad_${userId}_${new Date().toISOString().split('T')[0]}.pdf`
-        : `reporte_productividad_${new Date().toISOString().split('T')[0]}.pdf`;
+        ? `reporte_productividad_${userId}_${today}.pdf`
+        : `reporte_productividad_${today}.pdf`;
       
       downloadPDFBlob(blob, filename);
       toast.success('Reporte de productividad exportado exitosamente');
@@ -89,7 +91,8 @@ export function PDFExportComponent({
       setLoading('dashboard');
       const blob = await exportDashboardPDF();
       
-      const filename = `reporte_metricas_${new Date().toISOString().split('T')[0]}.pdf`;
+      const today = new Date().toISOString().split('T')[0];
+      const filename = `reporte_metricas_${today}.pdf`;
       
       downloadPDFBlob(blob, filename);
       toast.success('Reporte de métricas exportado exitosamente');
@@ -131,11 +134,13 @@ export function PDFExportComponent({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">Todos los proyectos</SelectItem>
-                  {availableProjects.map(project => (
-                    <SelectItem key={project.id} value={project.id}>
-                      {project.name}
-                    </SelectItem>
-                  ))}
+                  {Array.isArray(availableProjects) && availableProjects
+                    .filter(p => p && typeof p.id === 'string' && p.id !== null && p.id !== undefined && p.id.trim() !== '')
+                    .map(project => (
+                      <SelectItem key={project.id} value={project.id}>
+                        {project.name || project.id}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>
@@ -197,11 +202,13 @@ export function PDFExportComponent({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">Todos los usuarios</SelectItem>
-                  {availableUsers.map(user => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.name}
-                    </SelectItem>
-                  ))}
+                  {Array.isArray(availableUsers) && availableUsers
+                    .filter(u => u && typeof u.id === 'string' && u.id !== null && u.id !== undefined && u.id.trim() !== '')
+                    .map(user => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {user.name || user.id}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>

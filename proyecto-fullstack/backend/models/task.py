@@ -36,12 +36,11 @@ class Task(db.Model):
             'assigned_to': self.assigned_to,
             'due_date': self.due_date.isoformat() if self.due_date else None,
             'created_at': self.created_at.isoformat() if self.created_at else None,
-            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'commentsCount': len([c for c in self.comments if not c.is_deleted])
         }
-        
         if include_comments:
-            result['comments'] = [comment.to_dict() for comment in self.comments]
-            
+            result['comments'] = [comment.to_dict() for comment in self.comments if not comment.is_deleted]
         return result
 
     def __repr__(self):

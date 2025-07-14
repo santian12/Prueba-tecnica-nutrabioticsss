@@ -26,7 +26,7 @@ class ProjectService:
         return project.to_dict(include_tasks=True), None
 
     @staticmethod
-    def create_project(name, description, created_by):
+    def create_project(name, description, created_by, **kwargs):
         """Crear nuevo proyecto"""
         try:
             project = Project(
@@ -34,6 +34,11 @@ class ProjectService:
                 description=description,
                 created_by=created_by
             )
+            
+            # Agregar campos opcionales si están presentes
+            for key, value in kwargs.items():
+                if hasattr(project, key) and value is not None:
+                    setattr(project, key, value)
             
             db.session.add(project)
             db.session.commit()
@@ -75,6 +80,50 @@ class ProjectService:
         except Exception as e:
             db.session.rollback()
             return False, f"Error al eliminar proyecto: {str(e)}"
+
+    @staticmethod
+    def get_all_projects_stats():
+        """Obtener estadísticas de todos los proyectos"""
+        try:
+            projects = Project.query.all()
+            all_tasks = Task.query.all()
+            
+            total_projects = len(projects)
+            total_tasks = len(all_tasks)
+            
+            # Estadísticas por estado
+            tasks_by_status = {
+                'todo': len([t for t in all_tasks if t.status == 'todo']),
+                'in_progress': len([t for t in all_tasks if t.status == 'in_progress']),
+                'review': len([t for t in all_tasks if t.status == 'review']),
+                'done': len([t for t in all_tasks if t.status == 'done'])
+            }
+            
+            # Estadísticas por prioridad
+            tasks_by_priority = {
+                'high': len([t for t in all_tasks if t.priority == 'high']),
+                'medium': len([t for t in all_tasks if t.priority == 'medium']),
+                'low': len([t for t in all_tasks if t.priority == 'low'])
+            }
+            
+            # Proyectos por estado
+            projects_by_status = {
+                'active': len([p for p in projects if p.status == 'active']),
+                'completed': len([p for p in projects if p.status == 'completed']),
+                'on_hold': len([p for p in projects if p.status == 'on_hold'])
+            }
+            
+            stats = {
+                'total_projects': total_projects,
+                'total_tasks': total_tasks,
+                'tasks_by_status': tasks_by_status,
+                'tasks_by_priority': tasks_by_priority,
+                'projects_by_status': projects_by_status
+            }
+            
+            return stats, None
+        except Exception as e:
+            return None, f"Error al obtener estadísticas: {str(e)}"
 
     @staticmethod
     def get_project_stats(project_id):

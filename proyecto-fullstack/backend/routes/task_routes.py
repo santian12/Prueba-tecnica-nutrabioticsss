@@ -6,9 +6,9 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from services.task_service import TaskService
 from utils.auth_decorators import require_role
 
-tasks_bp = Blueprint('tasks', __name__, url_prefix='/tasks')
+tasks_bp = Blueprint('tasks', __name__)
 
-@tasks_bp.route('', methods=['GET'])
+@tasks_bp.route('/tasks', methods=['GET'])
 @jwt_required()
 def get_tasks():
     """Obtener todas las tareas con filtros opcionales"""
@@ -39,13 +39,14 @@ def get_tasks():
         
         return jsonify({
             'success': True,
-            'tasks': tasks
+            'data': tasks,
+            'total': len(tasks)
         }), 200
         
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error en el servidor: {str(e)}'}), 500
 
-@tasks_bp.route('/<task_id>', methods=['GET'])
+@tasks_bp.route('/tasks/<task_id>', methods=['GET'])
 @jwt_required()
 def get_task(task_id):
     """Obtener tarea específica"""
@@ -63,7 +64,7 @@ def get_task(task_id):
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error en el servidor: {str(e)}'}), 500
 
-@tasks_bp.route('', methods=['POST'])
+@tasks_bp.route('/tasks', methods=['POST'])
 @require_role('admin', 'project_manager', 'team_member')
 def create_task():
     """Crear nueva tarea"""
@@ -82,10 +83,9 @@ def create_task():
             description=data.get('description', ''),
             project_id=data['project_id'],
             assigned_to=data.get('assigned_to'),
-            status=data.get('status', 'pendiente'),
-            priority=data.get('priority', 'media'),
-            due_date=data.get('due_date'),
-            created_by=current_user_id
+            status=data.get('status', 'todo'),
+            priority=data.get('priority', 'medium'),
+            due_date=data.get('due_date')
         )
         
         if error:
@@ -100,7 +100,7 @@ def create_task():
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error en el servidor: {str(e)}'}), 500
 
-@tasks_bp.route('/<task_id>', methods=['PUT'])
+@tasks_bp.route('/tasks/<task_id>', methods=['PUT'])
 @require_role('admin', 'project_manager', 'team_member')
 def update_task(task_id):
     """Actualizar tarea"""
@@ -124,7 +124,7 @@ def update_task(task_id):
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error en el servidor: {str(e)}'}), 500
 
-@tasks_bp.route('/<task_id>', methods=['DELETE'])
+@tasks_bp.route('/tasks/<task_id>', methods=['DELETE'])
 @require_role('admin', 'project_manager')
 def delete_task(task_id):
     """Eliminar tarea"""
@@ -142,7 +142,7 @@ def delete_task(task_id):
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error en el servidor: {str(e)}'}), 500
 
-@tasks_bp.route('/<task_id>/comments', methods=['GET'])
+@tasks_bp.route('/tasks/<task_id>/comments', methods=['GET'])
 @jwt_required()
 def get_task_comments(task_id):
     """Obtener comentarios de una tarea"""
@@ -160,7 +160,7 @@ def get_task_comments(task_id):
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error en el servidor: {str(e)}'}), 500
 
-@tasks_bp.route('/<task_id>/comments', methods=['POST'])
+@tasks_bp.route('/tasks/<task_id>/comments', methods=['POST'])
 @jwt_required()
 def add_task_comment(task_id):
     """Agregar comentario a una tarea"""
@@ -189,7 +189,7 @@ def add_task_comment(task_id):
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error en el servidor: {str(e)}'}), 500
 
-@tasks_bp.route('/comments/<comment_id>', methods=['PUT'])
+@tasks_bp.route('/tasks/comments/<comment_id>', methods=['PUT'])
 @jwt_required()
 def update_comment(comment_id):
     """Actualizar comentario"""
@@ -218,7 +218,7 @@ def update_comment(comment_id):
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error en el servidor: {str(e)}'}), 500
 
-@tasks_bp.route('/comments/<comment_id>', methods=['DELETE'])
+@tasks_bp.route('/tasks/comments/<comment_id>', methods=['DELETE'])
 @jwt_required()
 def delete_comment(comment_id):
     """Eliminar comentario"""
