@@ -93,7 +93,7 @@ export function ProjectSidebar({
   }
 
   return (
-    <div className="w-64 bg-background border-r border-border fixed left-0 top-16 h-full overflow-y-auto">
+    <div className="w-64 bg-background border-r border-border fixed left-0 top-16 h-full overflow-y-auto z-30 md:static md:top-0 md:h-auto md:z-auto md:block hidden md:w-64 transition-all duration-300">
       <div className="p-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">

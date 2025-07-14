@@ -217,7 +217,7 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
@@ -234,7 +234,7 @@ export default function UsersPage() {
       </div>
 
       {/* Estadísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white dark:bg-gray-900 p-4 rounded-lg shadow border dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
@@ -280,8 +280,8 @@ export default function UsersPage() {
       </div>
 
       {/* Tabla de usuarios */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow border dark:border-gray-700 overflow-hidden">
-        <div className="overflow-x-auto">
+      <div className="bg-white dark:bg-gray-900 rounded-lg shadow border dark:border-gray-700 overflow-x-auto">
+        <div className="min-w-[600px]">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
@@ -346,8 +346,8 @@ export default function UsersPage() {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-gray-600 dark:bg-gray-900 bg-opacity-50 dark:bg-opacity-80 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-md w-full mx-4 border dark:border-gray-700">
+        <div className="fixed inset-0 bg-gray-600 dark:bg-gray-900 bg-opacity-50 dark:bg-opacity-80 flex items-center justify-center z-50 px-2">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-md w-full mx-2 sm:mx-4 border dark:border-gray-700">
             <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
               <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                 {editingUser ? 'Editar Usuario' : 'Crear Nuevo Usuario'}
@@ -415,13 +415,13 @@ export default function UsersPage() {
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="px-4 py-2 text-gray-700 dark:text-gray-200 bg-gray-200 dark:bg-gray-800 rounded-md hover:bg-gray-300 dark:hover:bg-gray-700"
+                  className="px-4 py-2 text-gray-700 dark:text-gray-200 bg-gray-200 dark:bg-gray-800 rounded-md hover:bg-gray-300 dark:hover:bg-gray-700 w-full sm:w-auto"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600"
+                  className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 w-full sm:w-auto"
                 >
                   {editingUser ? 'Actualizar' : 'Crear'}
                 </button>
@@ -429,7 +429,7 @@ export default function UsersPage() {
                   <button
                     type="button"
                     onClick={() => openDeleteConfirm(editingUser)}
-                    className="px-4 py-2 bg-red-600 dark:bg-red-500 text-white rounded-md hover:bg-red-700 dark:hover:bg-red-600"
+                    className="px-4 py-2 bg-red-600 dark:bg-red-500 text-white rounded-md hover:bg-red-700 dark:hover:bg-red-600 w-full sm:w-auto"
                   >
                     Eliminar
                   </button>
@@ -437,22 +437,22 @@ export default function UsersPage() {
               </div>
       {/* Confirmación de eliminación */}
       {showDeleteConfirm && deletingUser && (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-60 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-sm w-full mx-4 border dark:border-gray-700 p-6">
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-60 flex items-center justify-center z-50 px-2">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-sm w-full mx-2 sm:mx-4 border dark:border-gray-700 p-6">
             <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">¿Eliminar usuario?</h3>
             <p className="text-gray-700 dark:text-gray-300 mb-6">¿Estás seguro que deseas eliminar a <span className="font-semibold">{deletingUser.name}</span>? Esta acción no se puede deshacer.</p>
-            <div className="flex justify-end gap-2">
+            <div className="flex flex-col sm:flex-row justify-end gap-2">
               <button
                 type="button"
                 onClick={closeDeleteConfirm}
-                className="px-4 py-2 text-gray-700 dark:text-gray-200 bg-gray-200 dark:bg-gray-800 rounded-md hover:bg-gray-300 dark:hover:bg-gray-700"
+                className="px-4 py-2 text-gray-700 dark:text-gray-200 bg-gray-200 dark:bg-gray-800 rounded-md hover:bg-gray-300 dark:hover:bg-gray-700 w-full sm:w-auto"
               >
                 Cancelar
               </button>
               <button
                 type="button"
                 onClick={handleDeleteUser}
-                className="px-4 py-2 bg-red-600 dark:bg-red-500 text-white rounded-md hover:bg-red-700 dark:hover:bg-red-600"
+                className="px-4 py-2 bg-red-600 dark:bg-red-500 text-white rounded-md hover:bg-red-700 dark:hover:bg-red-600 w-full sm:w-auto"
               >
                 Eliminar
               </button>

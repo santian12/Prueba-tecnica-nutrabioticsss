@@ -11,9 +11,9 @@ export default function DashboardLayout({
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="pt-20"> {/* Compensar altura del navbar fijo */}
+      <div className="pt-20 flex flex-col md:flex-row">
         <DashboardSidebar>
-          <main className="flex-1 overflow-auto">
+          <main className="flex-1 overflow-auto w-full">
             {children}
           </main>
         </DashboardSidebar>

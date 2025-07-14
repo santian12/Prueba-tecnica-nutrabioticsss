@@ -66,13 +66,17 @@ export function DashboardSidebar({ children }: DashboardSidebarProps) {
 
   return (
     <div className="flex h-screen bg-background">
-      {/* Sidebar */}
-      <div className={cn(
-        "bg-card border-r border-border transition-all duration-300 flex flex-col",
-        collapsed ? "w-16" : "w-64"
-      )}>
+      {/* Sidebar responsive */}
+      <div
+        className={cn(
+          "bg-card border-r border-border transition-all duration-300 flex flex-col fixed z-40 top-0 left-0 h-full md:static md:h-auto",
+          collapsed ? "w-16" : "w-64",
+          "md:relative md:flex"
+        )}
+        style={{ minHeight: '100vh' }}
+      >
         {/* Header */}
-        <div className="p-4 border-b border-border flex items-center justify-between">
+        <div className="p-4 border-b border-border flex items-center justify-between md:justify-between">
           {!collapsed && (
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
@@ -90,7 +94,7 @@ export function DashboardSidebar({ children }: DashboardSidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4">
+        <nav className="flex-1 p-4 overflow-y-auto">
           <ul className="space-y-2">
             {filteredNavItems.map((item) => {
               const Icon = item.icon;
@@ -143,7 +147,8 @@ export function DashboardSidebar({ children }: DashboardSidebarProps) {
       </div>
 
       {/* Main content */}
-      <div className="flex-1 overflow-hidden">
+      {/* Overlay para mobile */}
+      <div className="flex-1 overflow-hidden md:ml-0 ml-16 md:pl-0 pl-0">
         {children}
       </div>
     </div>
