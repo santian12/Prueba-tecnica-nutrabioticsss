@@ -387,14 +387,14 @@ interface CreateUserData {
   name: string;
   email: string;
   password: string;
-  role: 'admin' | 'manager' | 'developer';
+  role: 'admin' | 'project_manager' | 'developer';
 }
 
 interface UpdateUserData {
   name?: string;
   email?: string;
   password?: string;
-  role?: 'admin' | 'manager' | 'developer';
+  role?: 'admin' | 'project_manager' | 'developer';
 }
 
 export async function getUsers(): Promise<{ success: boolean; data: any[]; total: number }> {

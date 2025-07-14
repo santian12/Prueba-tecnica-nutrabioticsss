@@ -224,3 +224,23 @@ class AuthService:
         except Exception as e:
             db.session.rollback()
             return None, f"Error al actualizar usuario: {str(e)}"
+
+    @staticmethod
+    def create_user(name, email, password, role='developer'):
+        """Crear usuario desde el panel de administración (sin login automático)"""
+        # Verificar si el usuario ya existe
+        if User.query.filter_by(email=email).first():
+            return None, "El email ya está registrado"
+        user = User(
+            name=name,
+            email=email,
+            role=role
+        )
+        user.set_password(password)
+        try:
+            db.session.add(user)
+            db.session.commit()
+            return user.to_dict(), None
+        except Exception as e:
+            db.session.rollback()
+            return None, f"Error al crear usuario: {str(e)}"

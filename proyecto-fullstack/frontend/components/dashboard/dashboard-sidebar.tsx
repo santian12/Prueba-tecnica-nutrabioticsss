@@ -22,31 +22,31 @@ const navItems = [
     href: '/dashboard',
     icon: LayoutDashboard,
     label: 'Dashboard',
-    allowedRoles: ['admin', 'manager', 'developer']
+    allowedRoles: ['admin', 'project_manager', 'developer']
   },
   {
     href: '/users',
     icon: Users,
     label: 'Usuarios',
-    allowedRoles: ['admin', 'manager'] // Solo admin y manager pueden ver usuarios
+    allowedRoles: ['admin', 'project_manager'] // Solo admin y manager pueden ver usuarios
   },
   {
     href: '/calendar',
     icon: Calendar,
     label: 'Calendario',
-    allowedRoles: ['admin', 'manager', 'developer']
+    allowedRoles: ['admin', 'project_manager', 'developer']
   },
   {
     href: '/metrics',
     icon: BarChart3,
     label: 'Métricas',
-    allowedRoles: ['admin', 'manager']
+    allowedRoles: ['admin', 'project_manager']
   },
   {
     href: '/reports',
     icon: FileText,
     label: 'Reportes PDF',
-    allowedRoles: ['admin', 'manager']
+    allowedRoles: ['admin', 'project_manager']
   }
 ];
 

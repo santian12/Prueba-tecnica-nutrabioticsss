@@ -10,7 +10,7 @@ interface User {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'manager' | 'developer';
+  role: 'admin' | 'project_manager' | 'developer';
   avatar?: string;
   createdAt: string;
 }
@@ -19,14 +19,14 @@ interface CreateUserData {
   name: string;
   email: string;
   password: string;
-  role: 'admin' | 'manager' | 'developer';
+  role: 'admin' | 'project_manager' | 'developer';
 }
 
 interface UpdateUserData {
   name?: string;
   email?: string;
   password?: string;
-  role?: 'admin' | 'manager' | 'developer';
+  role?: 'admin' | 'project_manager' | 'developer';
 }
 
 export default function UsersPage() {
@@ -137,6 +137,7 @@ export default function UsersPage() {
       name: user.name,
       email: user.email,
       password: '', // Vacío para no cambiar password
+      // Si el usuario tiene role 'project_manager', el select debe mostrar ese valor
       role: user.role
     });
     setShowModal(true);
@@ -183,7 +184,7 @@ export default function UsersPage() {
     switch (role) {
       case 'admin':
         return <Shield className="w-4 h-4 text-red-500" />;
-      case 'manager':
+      case 'project_manager':
         return <UserCheck className="w-4 h-4 text-blue-500" />;
       default:
         return <Users className="w-4 h-4 text-green-500" />;
@@ -192,14 +193,13 @@ export default function UsersPage() {
 
   // Obtener badge del rol
   const getRoleBadge = (role: string) => {
+    // Mapear project_manager a Manager para mostrarlo al usuario
     const roleConfig = {
       admin: { label: 'Administrador', color: 'bg-red-100 text-red-800' },
-      manager: { label: 'Manager', color: 'bg-blue-100 text-blue-800' },
+      project_manager: { label: 'Manager', color: 'bg-blue-100 text-blue-800' },
       developer: { label: 'Desarrollador', color: 'bg-green-100 text-green-800' }
     };
-    
     const config = roleConfig[role as keyof typeof roleConfig] || roleConfig.developer;
-    
     return (
       <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${config.color}`}>
         {getRoleIcon(role)}
@@ -260,7 +260,7 @@ export default function UsersPage() {
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Managers</p>
               <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                {users.filter(u => u.role === 'manager').length}
+                {users.filter(u => u.role === 'project_manager').length}
               </p>
             </div>
             <UserCheck className="w-8 h-8 text-blue-500" />
@@ -406,7 +406,7 @@ export default function UsersPage() {
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-100"
                   >
                     <option value="developer">Desarrollador</option>
-                    <option value="manager">Manager</option>
+                    <option value="project_manager">Manager</option>
                     <option value="admin">Administrador</option>
                   </select>
                 </div>

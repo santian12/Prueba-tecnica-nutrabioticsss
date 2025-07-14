@@ -117,6 +117,9 @@ def update_user(user_id):
         if not data:
             return jsonify({'success': False, 'message': 'Datos requeridos'}), 400
         
+        # Convertir 'manager' a 'project_manager' para compatibilidad con el enum
+        if 'role' in data and data['role'] == 'manager':
+            data['role'] = 'project_manager'
         user, error = AuthService.update_user_profile(user_id, **data)
         
         if error:
@@ -212,6 +215,9 @@ def create_user():
         data = request.get_json()
         if not data or not data.get('email') or not data.get('password') or not data.get('name') or not data.get('role'):
             return jsonify({'success': False, 'message': 'Faltan datos requeridos'}), 400
+        # Convertir 'manager' a 'project_manager' para compatibilidad con el enum
+        if data['role'] == 'manager':
+            data['role'] = 'project_manager'
         user, error = AuthService.create_user(**data)
         if error:
             return jsonify({'success': False, 'message': error}), 400
