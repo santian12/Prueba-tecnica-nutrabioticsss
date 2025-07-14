@@ -15,15 +15,14 @@ def get_projects():
     """Obtener todos los proyectos"""
     try:
         projects, error = ProjectService.get_all_projects()
-        
         if error:
             return jsonify({'success': False, 'message': error}), 500
-        
+        # Filtrar proyectos con id válido
+        filtered_projects = [p for p in projects if p and isinstance(p, dict) and 'id' in p and isinstance(p['id'], str) and p['id'].strip() != '']
         return jsonify({
             'success': True,
-            'projects': projects
+            'projects': filtered_projects
         }), 200
-        
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error en el servidor: {str(e)}'}), 500
 

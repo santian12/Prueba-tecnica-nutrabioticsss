@@ -31,14 +31,14 @@ def get_all_users():
         
         users, error = AuthService.get_all_users()
         print(f"[DEBUG] Users retrieved: {len(users) if users else 0}, Error: {error}")
-        
         if error:
             return jsonify({'success': False, 'message': error}), 500
-        
+        # Filtrar usuarios con id válido
+        filtered_users = [u for u in users if u and isinstance(u, dict) and 'id' in u and isinstance(u['id'], str) and u['id'].strip() != '']
         return jsonify({
             'success': True,
-            'data': users,
-            'total': len(users)
+            'data': filtered_users,
+            'total': len(filtered_users)
         }), 200
         
     except Exception as e:
@@ -201,5 +201,20 @@ def change_password():
             'message': message
         }), 200
         
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Error en el servidor: {str(e)}'}), 500
+
+@users_bp.route('/users', methods=['POST'])
+@require_role('admin')
+def create_user():
+    """Crear un nuevo usuario"""
+    try:
+        data = request.get_json()
+        if not data or not data.get('email') or not data.get('password') or not data.get('name') or not data.get('role'):
+            return jsonify({'success': False, 'message': 'Faltan datos requeridos'}), 400
+        user, error = AuthService.create_user(**data)
+        if error:
+            return jsonify({'success': False, 'message': error}), 400
+        return jsonify({'success': True, 'user': user}), 201
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error en el servidor: {str(e)}'}), 500

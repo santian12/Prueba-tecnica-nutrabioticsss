@@ -21,6 +21,7 @@ export default function ReportsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { user, isAuthenticated } = useAuthStore();
 
   // Verificar autenticación
@@ -35,6 +36,7 @@ export default function ReportsPage() {
     const loadData = async () => {
       try {
         setLoading(true);
+        setError(null);
         
         // Cargar proyectos
         const projectsResponse = await getProjects();
@@ -43,8 +45,9 @@ export default function ReportsPage() {
         // Cargar usuarios
         const usersResponse = await getUsers();
         setUsers(usersResponse.data || []);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error loading data:', error);
+        setError('No se pudo cargar los datos. Verifica tu conexión o el estado del servidor.');
         toast.error('Error al cargar datos');
       } finally {
         setLoading(false);
@@ -58,6 +61,20 @@ export default function ReportsPage() {
 
   if (!isAuthenticated) {
     return null;
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <div className="mb-4 text-destructive font-bold text-lg">{error}</div>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
+        >
+          Reintentar
+        </button>
+      </div>
+    );
   }
 
   if (loading) {

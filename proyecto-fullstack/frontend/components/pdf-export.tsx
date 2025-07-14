@@ -138,7 +138,7 @@ export function PDFExportComponent({
                     .filter(p => p && typeof p.id === 'string' && p.id !== null && p.id !== undefined && p.id.trim() !== '')
                     .map(project => (
                       <SelectItem key={project.id} value={project.id}>
-                        {project.name}
+                        {project.name || project.id}
                       </SelectItem>
                     ))}
                 </SelectContent>
@@ -206,7 +206,7 @@ export function PDFExportComponent({
                     .filter(u => u && typeof u.id === 'string' && u.id !== null && u.id !== undefined && u.id.trim() !== '')
                     .map(user => (
                       <SelectItem key={user.id} value={user.id}>
-                        {user.name}
+                        {user.name || user.id}
                       </SelectItem>
                     ))}
                 </SelectContent>
