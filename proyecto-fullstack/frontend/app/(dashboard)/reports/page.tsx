@@ -68,6 +68,10 @@ export default function ReportsPage() {
     );
   }
 
+  // Filtrar proyectos y usuarios con id válido
+  const filteredProjects = projects.filter(p => typeof p.id === 'string' && p.id.trim() !== '');
+  const filteredUsers = users.filter(u => typeof u.id === 'string' && u.id.trim() !== '');
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
@@ -80,8 +84,8 @@ export default function ReportsPage() {
       </div>
 
       <PDFExportComponent 
-        availableProjects={projects}
-        availableUsers={users}
+        availableProjects={filteredProjects}
+        availableUsers={filteredUsers}
       />
     </div>
   );

@@ -134,11 +134,13 @@ export function PDFExportComponent({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">Todos los proyectos</SelectItem>
-                  {availableProjects.map(project => (
-                    <SelectItem key={project.id} value={project.id}>
-                      {project.name}
-                    </SelectItem>
-                  ))}
+                  {Array.isArray(availableProjects) && availableProjects
+                    .filter(p => p && typeof p.id === 'string' && p.id !== null && p.id !== undefined && p.id.trim() !== '')
+                    .map(project => (
+                      <SelectItem key={project.id} value={project.id}>
+                        {project.name}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>
@@ -200,11 +202,13 @@ export function PDFExportComponent({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">Todos los usuarios</SelectItem>
-                  {availableUsers.map(user => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.name}
-                    </SelectItem>
-                  ))}
+                  {Array.isArray(availableUsers) && availableUsers
+                    .filter(u => u && typeof u.id === 'string' && u.id !== null && u.id !== undefined && u.id.trim() !== '')
+                    .map(user => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {user.name}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>

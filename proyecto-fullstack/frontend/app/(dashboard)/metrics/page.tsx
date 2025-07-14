@@ -80,9 +80,19 @@ export default function MetricsPage() {
       const overviewResponse = await getOverviewStats();
       if (overviewResponse.success) {
         setOverviewStats(overviewResponse.data.overview);
-        setProjectsByStatus(overviewResponse.data.projects_by_status);
-        setTasksByStatus(overviewResponse.data.tasks_by_status);
-        setTasksByPriority(overviewResponse.data.tasks_by_priority);
+        // Transformar objetos en arrays si es necesario
+        const statusObjToArray = (obj: any) => obj ? Object.entries(obj).map(([status, count]) => ({ status, count })) : [];
+        const priorityObjToArray = (obj: any) => obj ? Object.entries(obj).map(([priority, count]) => ({ priority, count })) : [];
+
+        // projects_by_status puede venir como array o objeto
+        const projectsStatusRaw = overviewResponse.data.projects_by_status;
+        setProjectsByStatus(Array.isArray(projectsStatusRaw) ? projectsStatusRaw : statusObjToArray(projectsStatusRaw));
+
+        const tasksStatusRaw = overviewResponse.data.tasks_by_status;
+        setTasksByStatus(Array.isArray(tasksStatusRaw) ? tasksStatusRaw : statusObjToArray(tasksStatusRaw));
+
+        const tasksPriorityRaw = overviewResponse.data.tasks_by_priority;
+        setTasksByPriority(Array.isArray(tasksPriorityRaw) ? tasksPriorityRaw : priorityObjToArray(tasksPriorityRaw));
       }
 
       // Cargar estadísticas de proyectos
@@ -95,15 +105,66 @@ export default function MetricsPage() {
         } else if (projectStatsResponse.data?.projects_progress) {
           projectsProgressData = projectStatsResponse.data.projects_progress;
         }
+
+        // Mapeo de status y prioridad si existen
+        const statusObjToArray = (obj: any) => obj ? Object.entries(obj).map(([status, count]) => ({ status, count })) : [];
+        const priorityObjToArray = (obj: any) => obj ? Object.entries(obj).map(([priority, count]) => ({ priority, count })) : [];
+
+        // Estado de proyectos
+        if (projectStatsResponse.data?.metrics?.projects_by_status) {
+          setProjectsByStatus(Array.isArray(projectStatsResponse.data.metrics.projects_by_status)
+            ? projectStatsResponse.data.metrics.projects_by_status
+            : statusObjToArray(projectStatsResponse.data.metrics.projects_by_status));
+        }
+        // Prioridad de tareas
+        if (projectStatsResponse.data?.metrics?.tasks_by_priority) {
+          setTasksByPriority(Array.isArray(projectStatsResponse.data.metrics.tasks_by_priority)
+            ? projectStatsResponse.data.metrics.tasks_by_priority
+            : priorityObjToArray(projectStatsResponse.data.metrics.tasks_by_priority));
+        }
+        // Estado de tareas
+        if (projectStatsResponse.data?.metrics?.tasks_by_status) {
+          setTasksByStatus(Array.isArray(projectStatsResponse.data.metrics.tasks_by_status)
+            ? projectStatsResponse.data.metrics.tasks_by_status
+            : statusObjToArray(projectStatsResponse.data.metrics.tasks_by_status));
+        }
       }
       setProjectsProgress(Array.isArray(projectsProgressData) ? projectsProgressData : []);
 
       // Cargar estadísticas de tareas
       const taskStatsResponse = await getTaskStats();
+      let tasksByAssigneeData = [];
+      let weeklyProductivityData = [];
       if (taskStatsResponse.success) {
-        setTasksByAssignee(taskStatsResponse.data.tasks_by_assignee);
-        setWeeklyProductivity(taskStatsResponse.data.weekly_productivity);
+        // Soportar ambas respuestas: data.metrics.tasks_by_assignee o data.tasks_by_assignee
+        if (taskStatsResponse.data?.metrics?.tasks_by_assignee) {
+          tasksByAssigneeData = taskStatsResponse.data.metrics.tasks_by_assignee;
+        } else if (taskStatsResponse.data?.tasks_by_assignee) {
+          tasksByAssigneeData = taskStatsResponse.data.tasks_by_assignee;
+        }
+        if (taskStatsResponse.data?.metrics?.weekly_productivity) {
+          weeklyProductivityData = taskStatsResponse.data.metrics.weekly_productivity;
+        } else if (taskStatsResponse.data?.weekly_productivity) {
+          weeklyProductivityData = taskStatsResponse.data.weekly_productivity;
+        }
+
+        // Mapeo de status y prioridad si existen
+        const statusObjToArray = (obj: any) => obj ? Object.entries(obj).map(([status, count]) => ({ status, count })) : [];
+        const priorityObjToArray = (obj: any) => obj ? Object.entries(obj).map(([priority, count]) => ({ priority, count })) : [];
+
+        if (taskStatsResponse.data?.metrics?.tasks_by_status) {
+          setTasksByStatus(Array.isArray(taskStatsResponse.data.metrics.tasks_by_status)
+            ? taskStatsResponse.data.metrics.tasks_by_status
+            : statusObjToArray(taskStatsResponse.data.metrics.tasks_by_status));
+        }
+        if (taskStatsResponse.data?.metrics?.tasks_by_priority) {
+          setTasksByPriority(Array.isArray(taskStatsResponse.data.metrics.tasks_by_priority)
+            ? taskStatsResponse.data.metrics.tasks_by_priority
+            : priorityObjToArray(taskStatsResponse.data.metrics.tasks_by_priority));
+        }
       }
+      setTasksByAssignee(Array.isArray(tasksByAssigneeData) ? tasksByAssigneeData : []);
+      setWeeklyProductivity(Array.isArray(weeklyProductivityData) ? weeklyProductivityData : []);
 
     } catch (error) {
       console.error('Error loading metrics:', error);
@@ -163,8 +224,8 @@ export default function MetricsPage() {
     <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Métricas y Estadísticas</h1>
-        <p className="text-gray-600 mt-1">Dashboard de análisis y rendimiento del proyecto</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Métricas y Estadísticas</h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-1">Dashboard de análisis y rendimiento del proyecto</p>
       </div>
 
       {/* Tarjetas de resumen */}
@@ -227,75 +288,87 @@ export default function MetricsPage() {
       {/* Gráficos principales */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Proyectos por Estado */}
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="text-lg font-semibold mb-4">Proyectos por Estado</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={formatStatusData(projectsByStatus)}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="value"
-              >
-                {formatStatusData(projectsByStatus).map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
+        <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow border border-gray-200 dark:border-gray-800">
+          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Proyectos por Estado</h3>
+          {Array.isArray(projectsByStatus) && projectsByStatus.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={formatStatusData(projectsByStatus)}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {formatStatusData(projectsByStatus).map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-[300px] text-gray-400 dark:text-gray-500">No hay datos para mostrar</div>
+          )}
         </div>
 
         {/* Tareas por Estado */}
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="text-lg font-semibold mb-4">Tareas por Estado</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={formatStatusData(tasksByStatus)}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="value" fill={COLORS.primary} />
-            </BarChart>
-          </ResponsiveContainer>
+        <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow border border-gray-200 dark:border-gray-800">
+          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Tareas por Estado</h3>
+          {Array.isArray(tasksByStatus) && tasksByStatus.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={formatStatusData(tasksByStatus)}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="value" fill={COLORS.primary} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-[300px] text-gray-400 dark:text-gray-500">No hay datos para mostrar</div>
+          )}
         </div>
       </div>
 
       {/* Gráficos secundarios */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Tareas por Prioridad */}
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="text-lg font-semibold mb-4">Tareas por Prioridad</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={formatPriorityData(tasksByPriority)}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="value"
-              >
-                {formatPriorityData(tasksByPriority).map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
+        <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow border border-gray-200 dark:border-gray-800">
+          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Tareas por Prioridad</h3>
+          {Array.isArray(tasksByPriority) && tasksByPriority.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={formatPriorityData(tasksByPriority)}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {formatPriorityData(tasksByPriority).map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-[300px] text-gray-400 dark:text-gray-500">No hay datos para mostrar</div>
+          )}
         </div>
 
         {/* Progreso de Proyectos */}
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="text-lg font-semibold mb-4">Progreso de Proyectos</h3>
+        <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow border border-gray-200 dark:border-gray-800">
+          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Progreso de Proyectos</h3>
           <div className="space-y-3 max-h-72 overflow-y-auto">
-            {projectsProgress.slice(0, 6).map((project) => (
+            {(Array.isArray(projectsProgress) ? projectsProgress : []).slice(0, 6).map((project) => (
               <div key={project.id} className="flex items-center justify-between">
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
@@ -334,11 +407,11 @@ export default function MetricsPage() {
       </div>
 
       {/* Tareas por Asignado */}
-      {tasksByAssignee.length > 0 && (
-        <div className="bg-white p-6 rounded-lg shadow border mb-8">
-          <h3 className="text-lg font-semibold mb-4">Tareas por Desarrollador</h3>
+      {Array.isArray(tasksByAssignee) && tasksByAssignee.length > 0 && (
+        <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow border border-gray-200 dark:border-gray-800 mb-8">
+          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Tareas por Desarrollador</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={tasksByAssignee}>
+            <BarChart data={Array.isArray(tasksByAssignee) ? tasksByAssignee : []}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
@@ -355,11 +428,11 @@ export default function MetricsPage() {
       )}
 
       {/* Productividad Semanal */}
-      {weeklyProductivity.length > 0 && (
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="text-lg font-semibold mb-4">Productividad Semanal</h3>
+      {Array.isArray(weeklyProductivity) && weeklyProductivity.length > 0 && (
+        <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow border border-gray-200 dark:border-gray-800">
+          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Productividad Semanal</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={weeklyProductivity}>
+            <LineChart data={Array.isArray(weeklyProductivity) ? weeklyProductivity : []}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="week" 
