@@ -132,9 +132,9 @@ export function useNotifications() {
     }
   }
 
+
   const deleteNotification = async (notificationId: string) => {
     if (!token) return
-
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/notifications/${notificationId}`, {
         method: 'DELETE',
@@ -143,26 +143,43 @@ export function useNotifications() {
           'Content-Type': 'application/json',
         },
       })
-
       if (!response.ok) {
         throw new Error('Error al eliminar notificación')
       }
-
       const data = await response.json()
-      
       if (data.success) {
         const deletedNotification = notifications.find(n => n.id === notificationId)
-        
-        // Actualizar estado local
         setNotifications(prev => prev.filter(notif => notif.id !== notificationId))
-        
-        // Actualizar contador si era no leída
         if (deletedNotification?.unread) {
           setUnreadCount(prev => Math.max(0, prev - 1))
         }
       }
     } catch (err) {
       console.error('Error al eliminar notificación:', err)
+    }
+  }
+
+  // Eliminar todas las notificaciones del usuario
+  const deleteAllNotifications = async () => {
+    if (!token) return
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/notifications/delete-all`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      })
+      if (!response.ok) {
+        throw new Error('Error al eliminar todas las notificaciones')
+      }
+      const data = await response.json()
+      if (data.success) {
+        setNotifications([])
+        setUnreadCount(0)
+      }
+    } catch (err) {
+      console.error('Error al eliminar todas las notificaciones:', err)
     }
   }
 
@@ -212,6 +229,7 @@ export function useNotifications() {
     markAsRead,
     markAllAsRead,
     deleteNotification,
+    deleteAllNotifications,
     refetch: fetchNotifications
   }
 }

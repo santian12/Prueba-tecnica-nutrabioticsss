@@ -31,7 +31,8 @@ export default function NotificationsPage() {
     fetchNotifications,
     markAsRead,
     markAllAsRead,
-    deleteNotification
+    deleteNotification,
+    deleteAllNotifications
   } = useNotifications()
   
   const [searchTerm, setSearchTerm] = useState('')
@@ -88,9 +89,15 @@ export default function NotificationsPage() {
     toast.success('Todas las notificaciones marcadas como leídas')
   }
 
+
   const handleDeleteNotification = async (id: string) => {
     await deleteNotification(id)
     toast.success('Notificación eliminada')
+  }
+
+  const handleDeleteAllNotifications = async () => {
+    await deleteAllNotifications()
+    toast.success('Todas las notificaciones han sido eliminadas')
   }
 
   const getCategoryName = (category: string) => {
@@ -134,13 +141,20 @@ export default function NotificationsPage() {
             </span>
           )}
         </div>
-        
-        {unreadCount > 0 && (
-          <Button onClick={handleMarkAllAsRead} variant="outline" size="sm" disabled={loading}>
-            <CheckCheck className="w-4 h-4 mr-2" />
-            Marcar todas como leídas
-          </Button>
-        )}
+        <div className="flex gap-2">
+          {unreadCount > 0 && (
+            <Button onClick={handleMarkAllAsRead} variant="outline" size="sm" disabled={loading}>
+              <CheckCheck className="w-4 h-4 mr-2" />
+              Marcar todas como leídas
+            </Button>
+          )}
+          {notifications.length > 0 && (
+            <Button onClick={handleDeleteAllNotifications} variant="destructive" size="sm" disabled={loading}>
+              <Trash2 className="w-4 h-4 mr-2" />
+              Eliminar todas
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Filtros y búsqueda */}

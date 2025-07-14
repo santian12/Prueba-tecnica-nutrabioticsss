@@ -1,3 +1,4 @@
+
 """
 Rutas para la gestión de notificaciones
 """
@@ -7,6 +8,17 @@ from services.notification_service import NotificationService
 
 # Crear blueprint
 notifications_bp = Blueprint('notifications', __name__, url_prefix='/notifications')
+
+@notifications_bp.route('/delete-all', methods=['DELETE'])
+@jwt_required()
+def delete_all_notifications():
+    """Eliminar todas las notificaciones del usuario autenticado"""
+    from services.task_service import TaskService
+    user_id = get_jwt_identity()
+    success, message = TaskService.delete_all_user_notifications(user_id)
+    if not success:
+        return jsonify({'success': False, 'message': message}), 500
+    return jsonify({'success': True, 'message': message}), 200
 
 
 @notifications_bp.route('', methods=['GET'])

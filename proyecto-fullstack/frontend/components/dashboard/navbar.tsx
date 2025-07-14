@@ -99,7 +99,7 @@ export function Navbar() {
               <div className="absolute right-0 mt-2 w-80 bg-popover rounded-lg shadow-lg border border-border z-50">
                 <div className="p-4">
                   <h3 className="font-medium text-popover-foreground mb-3">Notificaciones</h3>
-                  <div className="space-y-3">
+                  <div className="space-y-3 max-h-80 overflow-y-auto">
                     {notifications.length === 0 ? (
                       <p className="text-sm text-muted-foreground text-center py-4">
                         No tienes notificaciones nuevas
@@ -109,18 +109,27 @@ export function Navbar() {
                         <div
                           key={notification.id}
                           className={cn(
-                            'p-3 rounded-lg cursor-pointer hover:bg-accent',
-                            notification.unread ? 'bg-accent/50' : ''
+                            'p-3 rounded-lg cursor-pointer hover:bg-accent flex items-start gap-2',
+                            notification.unread ? 'bg-accent/50 border-l-4 border-primary' : ''
                           )}
                           onClick={() => handleNotificationClick(notification)}
                         >
-                          <div className="flex items-start justify-between">
-                            <p className="text-sm text-popover-foreground">{notification.title || notification.message}</p>
-                            {notification.unread && (
-                              <div className="w-2 h-2 bg-primary rounded-full mt-1"></div>
-                            )}
+                          <div className="flex-shrink-0 mt-1">
+                            {notification.type === 'success' && <span className="text-green-600">✅</span>}
+                            {notification.type === 'warning' && <span className="text-yellow-600">⚠️</span>}
+                            {notification.type === 'error' && <span className="text-red-600">❌</span>}
+                            {notification.type === 'info' && <span className="text-blue-600">ℹ️</span>}
                           </div>
-                          <p className="text-xs text-muted-foreground mt-1">{notification.time}</p>
+                          <div className="flex-1 min-w-0">
+                            <p className={cn(
+                              'text-sm truncate',
+                              notification.unread ? 'font-semibold text-popover-foreground' : 'text-muted-foreground'
+                            )}>{notification.title || notification.message}</p>
+                            <p className="text-xs text-muted-foreground mt-1 truncate">{notification.time}</p>
+                          </div>
+                          {notification.unread && (
+                            <div className="w-2 h-2 bg-primary rounded-full mt-2 ml-2"></div>
+                          )}
                         </div>
                       ))
                     )}
