@@ -5,6 +5,7 @@ import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useProjectStore } from '@/lib/store/projectStore'
+import { useAuthStore } from '@/lib/store/authStore'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -13,8 +14,9 @@ import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Task } from '@/lib/types'
 import { safeToDateInputString } from '@/lib/utils'
-import { X } from 'lucide-react'
+import { X, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { getUsers } from '@/lib/api-simple'
 
 const taskSchema = z.object({
   title: z.string().min(2, 'El título debe tener al menos 2 caracteres'),
@@ -35,9 +37,11 @@ interface TaskModalProps {
 }
 
 export function TaskModal({ isOpen, onClose, task, projectId }: TaskModalProps) {
-  const { createTask, updateTask, isLoading } = useProjectStore()
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
+  const { createTask, updateTask, deleteTask, isLoading } = useProjectStore();
+  const { user } = useAuthStore();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [userOptions, setUserOptions] = useState<{ id: string; name: string; email: string }[]>([]);
   const {
     register,
     handleSubmit,
@@ -49,8 +53,8 @@ export function TaskModal({ isOpen, onClose, task, projectId }: TaskModalProps) 
     defaultValues: task ? {
       title: task.title,
       description: task.description,
-      status: task.status,
-      priority: task.priority,
+      status: task.status || 'todo',
+      priority: task.priority || 'medium',
       due_date: safeToDateInputString(task.due_date),
       assigned_to: task.assigned_to
     } : {
@@ -68,8 +72,8 @@ export function TaskModal({ isOpen, onClose, task, projectId }: TaskModalProps) 
       reset({
         title: task.title,
         description: task.description,
-        status: task.status,
-        priority: task.priority,
+        status: task.status || 'todo',
+        priority: task.priority || 'medium',
         due_date: safeToDateInputString(task.due_date),
         assigned_to: task.assigned_to
       })
@@ -84,6 +88,20 @@ export function TaskModal({ isOpen, onClose, task, projectId }: TaskModalProps) 
       })
     }
   }, [task, reset])
+
+  useEffect(() => {
+    async function loadUsers() {
+      try {
+        const res = await getUsers();
+        if (res.success && Array.isArray(res.data)) {
+          setUserOptions(res.data.map((u: any) => ({ id: u.id, name: u.name, email: u.email })));
+        }
+      } catch (err) {
+        setUserOptions([]);
+      }
+    }
+    if (isOpen) loadUsers();
+  }, [isOpen]);
 
   const onSubmit = async (data: TaskFormData) => {
     try {
@@ -126,6 +144,30 @@ export function TaskModal({ isOpen, onClose, task, projectId }: TaskModalProps) 
     }
   }
 
+  // Eliminar tarea
+  const handleDeleteTask = async () => {
+    if (!task) return;
+    if (!window.confirm('¿Estás seguro de que quieres eliminar esta tarea? Esta acción no se puede deshacer.')) return;
+    setIsDeleting(true);
+    try {
+      await deleteTask(task.id);
+      toast.success('Tarea eliminada exitosamente');
+      onClose();
+    } catch (error: any) {
+      let errorMessage = 'Error al eliminar tarea';
+      if (error?.response?.status === 403 || error?.message?.toLowerCase().includes('acceso denegado')) {
+        errorMessage = 'Acceso denegado: solo administradores o managers pueden eliminar tareas.';
+      } else if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      toast.error(errorMessage);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const handleClose = () => {
     reset()
     onClose()
@@ -156,7 +198,6 @@ export function TaskModal({ isOpen, onClose, task, projectId }: TaskModalProps) 
             </Button>
           </div>
         </CardHeader>
-        
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
@@ -250,6 +291,29 @@ export function TaskModal({ isOpen, onClose, task, projectId }: TaskModalProps) 
               )}
             </div>
 
+            <div className="space-y-2">
+              {user && (user.role === 'admin' || user.role === 'project_manager') ? (
+                <div className="space-y-2">
+                  <Label htmlFor="assigned_to">Asignar a usuario</Label>
+                  <Controller
+                    name="assigned_to"
+                    control={control}
+                    render={({ field }) => (
+                      <select
+                        id="assigned_to"
+                        {...field}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-100"
+                      >
+                        <option value="">Sin asignar</option>
+                        {userOptions.map((u) => (
+                          <option key={u.id} value={u.id}>{u.name} ({u.email})</option>
+                        ))}
+                      </select>
+                    )}
+                  />
+                </div>
+              ) : null}
+              </div>
             <div className="flex space-x-3 pt-4">
               <Button
                 type="button"
@@ -275,6 +339,18 @@ export function TaskModal({ isOpen, onClose, task, projectId }: TaskModalProps) 
           </form>
         </CardContent>
       </Card>
+      {/* Botón eliminar solo para admin o manager y si es edición */}
+      {task && user && (user.role === 'admin' || user.role === 'project_manager') && (
+        <Button
+          variant="destructive"
+          onClick={handleDeleteTask}
+          disabled={isDeleting}
+          className="mt-4 w-full flex items-center justify-center"
+        >
+          {isDeleting ? <LoadingSpinner size="sm" className="mr-2" /> : <Trash2 className="w-4 h-4 mr-2" />}
+          Eliminar Tarea
+        </Button>
+      )}
     </div>
   )
 }

@@ -1,3 +1,14 @@
+export async function deleteUser(userId: string): Promise<{ success: boolean; message: string }> {
+  console.log('🗑️ Eliminando usuario:', userId);
+  try {
+    const response = await httpClient.delete(`/api/users/${userId}`);
+    console.log('✅ Delete user response:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('❌ Delete user error:', error);
+    throw error;
+  }
+}
 // API Client simplificado - Versión nueva
 import axios from 'axios';
 import Cookies from 'js-cookie';
@@ -206,8 +217,12 @@ export async function deleteProject(id: string): Promise<void> {
   try {
     await httpClient.delete(`/api/projects/${id}`);
     console.log('✅ Proyecto eliminado');
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Error al eliminar proyecto:', error);
+    // Propaga el error con mensaje específico si es 403
+    if (error?.response?.status === 403 || error?.message?.toLowerCase().includes('acceso denegado')) {
+      error.message = 'Acceso denegado: solo administradores pueden eliminar proyectos.';
+    }
     throw error;
   }
 }
@@ -475,7 +490,20 @@ export async function getTaskComments(taskId: string): Promise<{ success: boolea
   try {
     const response = await httpClient.get(`/api/tasks/${taskId}/comments`);
     console.log('✅ Task comments response:', response.data);
-    return response.data;
+    // Adaptar la respuesta para que siempre devuelva { success, data, total }
+    if (response.data && Array.isArray(response.data.comments)) {
+      return {
+        success: response.data.success,
+        data: response.data.comments,
+        total: response.data.comments.length
+      };
+    } else {
+      return {
+        success: false,
+        data: [],
+        total: 0
+      };
+    }
   } catch (error) {
     console.error('❌ Get task comments error:', error);
     throw error;

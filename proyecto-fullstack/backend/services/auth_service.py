@@ -13,6 +13,19 @@ from utils.email_service import send_password_reset_email
 
 class AuthService:
     @staticmethod
+    def delete_user(user_id):
+        """Soft delete: marcar usuario como inactivo"""
+        try:
+            user = User.query.get(user_id)
+            if not user or not user.is_active:
+                return False, "Usuario no encontrado"
+            user.is_active = False
+            db.session.commit()
+            return True, "Usuario eliminado (inactivado) correctamente"
+        except Exception as e:
+            db.session.rollback()
+            return False, f"Error al eliminar usuario: {str(e)}"
+    @staticmethod
     def login(email, password):
         """Autenticar usuario"""
         user = User.query.filter_by(email=email, is_active=True).first()
@@ -181,34 +194,33 @@ class AuthService:
             print(f"[DEBUG] Exception in get_user_by_id: {str(e)}")
             return None, f"Error al obtener usuario: {str(e)}"
 
+
     @staticmethod
-    def update_profile(user_id, name=None, email=None, password=None):
-        """Actualizar perfil del usuario"""
+    def update_user_profile(user_id, name=None, email=None, password=None, role=None):
+        """Actualizar datos de usuario (admin/manager)"""
         try:
             user = User.query.get(user_id)
-            
             if not user:
                 return None, "Usuario no encontrado"
-            
-            # Verificar si el email ya existe (si se está actualizando)
+
+            # Verificar si el email ya existe en otro usuario
             if email and email != user.email:
                 existing_user = User.query.filter_by(email=email).first()
-                if existing_user:
+                if existing_user and existing_user.id != user.id:
                     return None, "El email ya está en uso por otro usuario"
-            
+
             # Actualizar campos si se proporcionan
             if name:
                 user.name = name
-            
             if email:
                 user.email = email
-            
             if password:
                 user.set_password(password)
-            
+            if role:
+                user.role = role
+
             db.session.commit()
             return user.to_dict(), None
-            
         except Exception as e:
             db.session.rollback()
-            return None, f"Error al actualizar perfil: {str(e)}"
+            return None, f"Error al actualizar usuario: {str(e)}"

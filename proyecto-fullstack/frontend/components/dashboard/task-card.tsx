@@ -59,7 +59,13 @@ export function TaskCard({ task, onEdit, onShowComments, isDragging = false }: T
             <Edit size={14} />
           </Button>
         </div>
-        
+        {/* Usuario asignado */}
+        {task.assignedUserName && (
+          <div className="flex items-center text-xs text-gray-500 mt-1">
+            <User size={12} className="mr-1" />
+            <span className="truncate max-w-[120px)">{task.assignedUserName}</span>
+          </div>
+        )}
         <div className="flex items-center space-x-2">
           <Badge 
             variant="outline" 
@@ -70,7 +76,6 @@ export function TaskCard({ task, onEdit, onShowComments, isDragging = false }: T
           >
             {translateTaskPriority(task.priority)}
           </Badge>
-          
           <div className="flex items-center text-xs text-gray-500">
             <Calendar size={12} className="mr-1" />
             {task.due_date ? safeFormatDate(task.due_date) : 'Sin fecha'}

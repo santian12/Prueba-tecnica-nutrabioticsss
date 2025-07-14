@@ -6,7 +6,24 @@ Sistema completo de gestión de proyectos desarrollado con arquitectura de micro
 ![Status](https://img.shields.io/badge/status-production-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-yellow.svg)
 
+
 ## 📋 Tabla de Contenidos
+
+- [🏗️ Arquitectura](#️-arquitectura)
+- [🚀 Inicio Rápido](#-inicio-rápido)
+- [📋 Prerrequisitos](#-prerrequisitos)
+- [🛠️ Instalación](#️-instalación)
+- [🎯 Funcionalidades](#-funcionalidades)
+- [🌐 URLs y Accesos](#-urls-y-accesos)
+- [👥 Usuarios de Prueba](#-usuarios-de-prueba)
+- [🔧 Comandos Útiles](#-comandos-útiles)
+- [📁 Estructura del Proyecto](#-estructura-del-proyecto)
+- [🔧 Configuración Avanzada](#-configuración-avanzada)
+- [🐛 Solución de Problemas](#-solución-de-problemas)
+- [📚 Documentación de API](#-documentación-de-api)
+- [🧪 Pruebas y Cobertura](#-pruebas-y-cobertura)
+- [⚙️ Decisiones Técnicas](#️-decisiones-técnicas)
+- [📖 Manual Básico de Usuario](#-manual-básico-de-usuario)
 
 - [🏗️ Arquitectura](#️-arquitectura)
 - [🚀 Inicio Rápido](#-inicio-rápido)
@@ -114,7 +131,90 @@ npm run dev
 - ✅ **PostgreSQL 14+**
 - ✅ **Git**
 
+
 ## 🛠️ Instalación
+## 🧪 Pruebas y Cobertura
+
+El sistema incluye una batería de pruebas unitarias y de integración para backend (Flask) y frontend (Next.js).
+
+### Ejecutar tests del backend (Flask)
+
+```bash
+cd backend
+pytest --maxfail=1 --disable-warnings -v
+# Para ver el coverage:
+pytest --cov=services --cov=models --cov=routes --cov-report=term-missing
+```
+
+### Ejecutar tests del frontend (Next.js)
+
+```bash
+cd frontend
+npm run test
+# O para coverage:
+npm run test -- --coverage
+```
+
+### Estructura de tests
+
+- `backend/tests/models/` — Pruebas unitarias de modelos
+- `backend/tests/services/` — Pruebas unitarias de servicios
+- `backend/tests/routes/` — Pruebas de endpoints REST
+
+### Buenas prácticas
+- Uso de mocks para dependencias externas (DB, JWT, email)
+- Cobertura de casos de éxito y error
+- Organización profesional por tipo de lógica
+
+### Ver el reporte de cobertura
+Al ejecutar los comandos anteriores con `--cov`, se mostrará el porcentaje de cobertura y las líneas no cubiertas.
+
+---
+
+## ⚙️ Decisiones Técnicas
+
+- **Arquitectura de microservicios**: Separación clara entre frontend, backend y base de datos, usando Docker para facilitar despliegue y escalabilidad.
+- **Flask + SQLAlchemy**: Permite flexibilidad, integración rápida y ORM robusto.
+- **JWT para autenticación**: Seguridad y escalabilidad para APIs modernas.
+- **Next.js + Tailwind**: Permite SSR, SSG y una UI moderna y responsiva.
+- **Mocks y tests**: Se priorizó la cobertura de lógica de negocio y endpoints críticos, usando mocks para dependencias externas.
+- **Notificaciones por email**: Servicio desacoplado y preparado para integración con Brevo (SendinBlue) o cualquier proveedor SMTP.
+- **Generación de PDFs**: Uso de ReportLab para reportes avanzados y personalizables.
+- **Variables de entorno**: Toda configuración sensible y de entorno se gestiona por variables `.env`.
+
+---
+
+## 📖 Manual Básico de Usuario
+
+### Acceso y autenticación
+1. Ingresa a la URL del frontend (`http://localhost:3000`).
+2. Haz clic en "Iniciar sesión" e ingresa tus credenciales.
+3. Si no tienes cuenta, usa "Registrarse".
+
+### Gestión de proyectos
+1. Desde el dashboard, selecciona "Proyectos" en el menú lateral.
+2. Haz clic en "Nuevo Proyecto" para crear uno.
+3. Puedes editar, ver detalles o eliminar proyectos existentes.
+
+### Gestión de tareas
+1. Dentro de un proyecto, accede a la pestaña "Tareas".
+2. Crea nuevas tareas, asígnalas a usuarios y cambia su estado.
+3. Usa los filtros para ver tareas por estado, prioridad o responsable.
+
+### Reportes y métricas
+1. Accede a la sección "Reportes" para generar PDFs de proyectos, tareas o usuarios.
+2. Visualiza métricas clave en el dashboard principal.
+
+### Notificaciones
+1. Recibe notificaciones en tiempo real sobre asignaciones, cambios y recordatorios.
+2. Configura tu email para recibir notificaciones externas (si está habilitado).
+
+### Perfil de usuario
+1. Accede a tu perfil desde el menú superior derecho.
+2. Actualiza tu información personal y cambia tu contraseña.
+
+---
+
 
 ### Instalación con Docker
 

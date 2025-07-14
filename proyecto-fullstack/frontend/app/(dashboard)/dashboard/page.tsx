@@ -39,6 +39,7 @@ export default function DashboardPage() {
   const [showTaskModal, setShowTaskModal] = useState(false)
   const [selectedTask, setSelectedTask] = useState<any>(null)
   const [editingProject, setEditingProject] = useState<any>(null)
+  const [showFilters, setShowFilters] = useState(false)
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -121,9 +122,17 @@ export default function DashboardPage() {
       }
       // Actualizar conteos después de eliminar
       await fetchAllTaskCounts()
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error al eliminar proyecto:', error)
-      toast.error('Error al eliminar proyecto')
+      let errorMessage = 'Error al eliminar proyecto';
+      if (error?.response?.status === 403 || error?.message?.toLowerCase().includes('acceso denegado')) {
+        errorMessage = 'Acceso denegado: solo administradores pueden eliminar proyectos.';
+      } else if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      toast.error(errorMessage);
     }
   }
 
@@ -203,10 +212,30 @@ export default function DashboardPage() {
                     className="pl-10"
                   />
                 </div>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={() => setShowFilters(true)}>
                   <Filter size={16} className="mr-2" />
                   Filtros
                 </Button>
+              </div>
+            )}
+            {/* Modal de Filtros */}
+            {showFilters && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl p-6 w-full max-w-sm relative">
+                  <button
+                    className="absolute top-2 right-2 text-gray-500 hover:text-gray-900 dark:hover:text-gray-100"
+                    onClick={() => setShowFilters(false)}
+                  >
+                    ×
+                  </button>
+                  <h2 className="text-lg font-bold mb-4 text-foreground">Filtros (próximamente)</h2>
+                  <p className="text-muted-foreground">Aquí podrás filtrar tareas por estado, prioridad, responsable, etc.</p>
+                  <div className="mt-6 flex justify-end">
+                    <Button variant="outline" onClick={() => setShowFilters(false)}>
+                      Cerrar
+                    </Button>
+                  </div>
+                </div>
               </div>
             )}
           </div>

@@ -9,6 +9,39 @@ from models.user import User
 
 class TaskService:
     @staticmethod
+    def add_task_comment(task_id, content, user_id):
+        """Agregar comentario a una tarea"""
+        from models.comment import Comment
+        from models.task import Task
+        from models.user import User
+        try:
+            task = Task.query.get(task_id)
+            if not task:
+                return None, "Tarea no encontrada"
+            user = User.query.get(user_id)
+            if not user:
+                return None, "Usuario no encontrado"
+            comment = Comment(
+                content=content,
+                task_id=task_id,
+                author_id=user_id
+            )
+            db.session.add(comment)
+            db.session.commit()
+            return comment.to_dict(), None
+        except Exception as e:
+            db.session.rollback()
+            return None, f"Error al agregar comentario: {str(e)}"
+    @staticmethod
+    def get_task_comments(task_id):
+        """Obtener comentarios de una tarea"""
+        from models.comment import Comment
+        try:
+            comments = Comment.query.filter_by(task_id=task_id, is_deleted=False).order_by(Comment.created_at.asc()).all()
+            return [comment.to_dict() for comment in comments], None
+        except Exception as e:
+            return None, f"Error al obtener comentarios de la tarea: {str(e)}"
+    @staticmethod
     def get_tasks_stats(filters=None):
         """Obtener estadísticas de tareas con filtros opcionales"""
         try:
